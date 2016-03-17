@@ -37,8 +37,10 @@ def process_command(message, c, addr):
             nicks[addr] = nick
             if prev_nick:
                 response = "{} changed nickname to {}".format(prev_nick, nick)
+                print("{} changed nickname to {}".format(prev_nick, nick))
             else:
                 response = "{} joined the server.".format(nick)
+                print("{} joined the server.".format(nick))
         else:
             print(c, "nick change blocked. (Value: \"{}\")".format(nick))
             priv_response = "Nickname change denied."
@@ -46,49 +48,58 @@ def process_command(message, c, addr):
         broadcast(response, sender=c, server = True)
     if priv_response:
         broadcast(priv_response, targets = [c])
-        
 
 def threaded_client(c, addr):
-    #try:
     while True:
-        data = c.recv(data_buff)
+        try:
+            data = c.recv(data_buff)
+        except socket.error as e:
+            if e.errno == errno.ECONNRESET:
+                break
+            else:
+                raise
         if not data:
             break
         message = data.decode("utf-8")
         if message[0] == "/":
+            print("\"{}\" from {}".format(addr))
             process_command(message, c, addr)
         else:
             print("\"{}\"".format(message), "from", str(addr))
             broadcast(message, sender=c)
+    print("{} disconnected.".format(addresses[c]))
     c.close()
     connections.remove(c)
-    #except Exception as e:
-        #print(e)
-        #c.close()
-        #connections.remove(c)
 
 def broadcast(message, sender = None, targets = [], server=False):
     for connection in connections:
         time = datetime.datetime.now().strftime('%H:%M:%S')
         if targets:
             if connection in targets:
-                #try:
-                connection.send(message.encode())
-                #except Exception as e:
-                    #print(e)
-                    #connection.close()
-                    #connections.remove(connection)
+                try:
+                    connection.send(message.encode())
+                except socket.error as e:
+                    if e.errno == errno.ECONNRESET: # client disconnects
+                        print("{} disconnected.".format(addresses[c]))
+                        connection.close()
+                        connections.remove(connection)
+                    else: # other error
+                        raise
         else:
-            #try:
             if not server:
                 message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
             else:
                 message = "[" + time + "] " + message
-            connection.send(message.encode())
-            #except Exception as e:
-                #print(e)
-                #connection.close()
-                #connections.remove(connection)
+            try:
+                connection.send(message.encode())
+            except socket.error as e:
+                if e.errno == errno.ECONNRESET: # client disconnects
+                    print("{} disconnected.".format(addresses[c]))
+                    connection.close()
+                    connections.remove(connection)
+                else: # other error
+                    raise
+
             
 
 connections = []
