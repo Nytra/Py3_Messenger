@@ -6,13 +6,18 @@ __email__ = "samueltscott@gmail.com"
 import socket, threading
 
 def listen(s):
-    print("Listening for connections to", server, "on port", str(port) + "...")
-    s.listen(1)
-    c, addr = s.accept()
-    connections.append(c)
-    print("Connection established with", str(addr), "on port", port)
-    tc = threading.Thread(target = threaded_client, args = (c, addr))
-    tc.start()
+    try:
+        print("Listening for connections to", server, "on port", str(port) + "...")
+        s.listen(1)
+        c, addr = s.accept()
+        connections.append(c)
+        print("Connection established with", str(addr), "on port", port)
+        tc = threading.Thread(target = threaded_client, args = (c, addr))
+        tc.start()
+    except:
+        c.close()
+        s.close()
+        quit()
 
 def threaded_client(c, addr):
     try:
@@ -25,7 +30,9 @@ def threaded_client(c, addr):
             broadcast(message, [c])
         c.close()
         connections.remove(c)
-    except:
+    except Exception as e:
+        print(e)
+        
         c.close()
         s.close()
         quit()
@@ -35,8 +42,8 @@ def broadcast(message, exceptions = []):
         # if connection not in exceptions:
         try:
             connection.send(message.encode())
-        except:
-            print("Failed to broadcast \"{}\".".format(message))
+        except Exception as e:
+            print(e)
 
 connections = []
 if __name__ == "__main__":

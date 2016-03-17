@@ -4,34 +4,50 @@ __email__ = "samueltscott@gmail.com"
 # Created on 16-03-2016
 import socket, threading, random
 from tkinter import *
+from urllib import request
 
 # this program uses a graphical user interface
 
 class App(Frame):
-    version = 0.1
-    server = input("Enter an IP address: ").strip()
-    name = input("Enter your username: ").strip()
-    if not name:
-        name = "Anonymous" + str(random.randrange(1, 10000))
-    port = 45009
-    
+    version = 0.1 
     def __init__(self, master):
         super(App, self).__init__(master)
-        
+
+        self.repo_url = "https://raw.githubusercontent.com/Nytra/messenger/master/Messenger%20Client.py"
+        self.check_update()
+        self.server = input("Enter an IP address: ").strip()
+        self.name = input("Enter your username: ").strip()
+        if not name:
+            self.name = "Anonymous" + str(random.randrange(1, 10000))
+        self.port = 45009
         self.grid()
         self.data_buff = 4096
         if not self.connect():
-            #print("Unable to connect to", App.server, "on port", str(App.port), "\nClosing program...")
+            #print("Unable to connect to", self.server, "on port", str(self.port), "\nClosing program...")
             quit()
         self.create_widgets()
 
         t1 = threading.Thread(target = self.get_messages)
         t1.start()
 
+    def check_update(self):
+        print("Checking for updates...")
+        response = request.urlopen(self.repo_url)
+        data = response.read()
+        data_str = data.decode("utf-8")
+        with open("Messenger Client.py", "r") as f:
+            file = f.read().strip()
+        if data_str != file:
+            print("An update is required.")
+            input()
+        else:
+            print("The program is up to date.")
+            input()
+
     def __str__(self):
-        rep = "Chat Instance\nServer: " + App.server \
-              + "\nPort: " + str(App.port) + "\nVersion: " \
-              + str(App.version)
+        rep = "Chat Instance\nServer: " + self.server \
+              + "\nPort: " + str(self.port) + "\nVersion: " \
+              + str(self.version)
         return rep
 
     def create_widgets(self):
@@ -49,7 +65,7 @@ class App(Frame):
         if not message:
             self.message_input.delete(0, END)
             return
-        message = App.name + "> " + message
+        message = self.name + "> " + message
         data = message.encode()
         s.send(data)
         self.message_input.delete(0, END)
@@ -71,9 +87,9 @@ class App(Frame):
         self.insert_message("Connection Lost.")
 
     def connect(self):
-        print("Attempting to connect to", App.server, "on port", App.port)
+        print("Attempting to connect to", self.server, "on port", self.port)
         try:
-            s.connect((App.server, App.port))
+            s.connect((self.server, self.port))
             print("Connection established.")
             return True
         except Exception as e:
@@ -81,7 +97,7 @@ class App(Frame):
             input("\nPress enter to continue . . .")
             return False
 
-        
+
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 root = Tk()
 app = App(root)
