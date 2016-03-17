@@ -17,10 +17,8 @@ def listen(s):
         tc.start()
     except Exception as e:
         print(e)
-        input("Press enter to continue . . .")
         c.close()
-        s.close()
-        quit()
+        connections.remove(c)
 
 def process_command(message, c):
     message = message[1:]
@@ -30,9 +28,13 @@ def process_command(message, c):
     if command == "nick":
         nick = " ".join(x for x in params).strip()
         if nick not in illegal_nicks:
+            prev_nick = nicks[c]
             nicks[c] = nick
+            response = "{} changed nickname to {}".format(prev_nick, nick)
         else:
             print(c, "nick change blocked. (Value: \"{}\")".format(nick))
+            response = "Nickname change denied."
+        broadcast(response, targets = [c])
         
 
 def threaded_client(c, addr):
@@ -44,25 +46,34 @@ def threaded_client(c, addr):
             message = data.decode("utf-8")
             if message[0] == "/":
                 process_command(message, c)
-            print("\"{}\"".format(message), "from", str(addr))
-            broadcast(message, c)
+            else:
+                print("\"{}\"".format(message), "from", str(addr))
+                broadcast(message, c)
         c.close()
         connections.remove(c)
     except Exception as e:
         print(e)
-        input("Press enter to continue . . .")
         c.close()
-        s.close()
-        quit()
+        connections.remove(c)
 
-def broadcast(message, c):
+def broadcast(message, sender = None, targets = []):
     for connection in connections:
-        # if connection not in exceptions:
-        try:
-            message = nicks[c] + "> " + message
-            connection.send(message.encode())
-        except Exception as e:
-            print(e)
+        if targets:
+            if connection in targets:
+                try:
+                    connection.send(message.encode())
+                except Exception as e:
+                    print(e)
+                    connection.close()
+                    connections.remove(connection)
+        else:
+            try:
+                message = nicks[sender] + "> " + message
+                connection.send(message.encode())
+            except Exception as e:
+                print(e)
+                connection.close()
+                connections.remove(connection)
             
 
 connections = []
