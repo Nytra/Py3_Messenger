@@ -27,7 +27,11 @@ def process_command(message, c):
     params = message.split(" ")
     command = params[0]
     if command == "nick":
-        nicks[c] = " ".join(x for x in params)#params[1] 
+        nick = " ".join(x for x in params).strip()
+        if nick not in illegal_nicks:
+            nicks[c] = nick
+        else:
+            print(c, "nick change blocked. (Value: \"{}\")".format(nick))
         
 
 def threaded_client(c, addr):
@@ -63,6 +67,7 @@ def broadcast(message, sender):
 connections = []
 addresses = {}
 nicks = {}
+illegal_nicks = ["", " ", "<", ">"]
 if __name__ == "__main__":
     server = socket.gethostbyname(socket.gethostname())#"10.13.9.89" # MCS IP Address
     print("IP Address:", server)
