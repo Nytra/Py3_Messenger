@@ -10,6 +10,8 @@ def listen(s):
     s.listen(1)
     c, addr = s.accept()
     connections.append(c)
+    if len(connections) == 1:
+        admin = [c, addr]
     addresses[c] = addr
     print("Connection established with", str(addr))
     tc = threading.Thread(target = threaded_client, args = (c, addr))
@@ -39,6 +41,19 @@ def process_command(message, c, addr):
         else:
             print(c, "nick change blocked. (Value: \"{}\")".format(nick))
             priv_response = "Nickname change denied."
+    if command == "kick":
+        if admin == [c, addr]:
+            target = params[0]
+            for connection in connections:
+                a = addresses[connection]
+                if nicks[a].lower() == target.lower():
+                    connection.close()
+                    response = "{} has disconnected.".format(nicks[a])
+                    print("{} \"{}\" has disconnected.".format(a, nicks[a]))
+                    connections.remove(connection)
+                    break
+        else:
+            priv_response = "Access denied."
     if response:
         broadcast(response, sender=c, server = True)
     if priv_response:
@@ -62,7 +77,7 @@ def threaded_client(c, addr):
         else:
             print("\"{}\"".format(message), "from", str(addr), "\"{}\"".format(nicks[addr]))
             broadcast(message, sender=c)
-    print("{} disconnected.".format(addresses[c]))
+    print("{} \"{}\" disconnected.".format(addresses[c], nicks[addr]))
     c.close()
     connections.remove(c)
 
@@ -74,7 +89,7 @@ def broadcast(message, sender = None, targets = [], server=False):
                 try:
                     connection.send(message.encode())
                 except socket.error as e:
-                    print("{} disconnected.".format(addresses[c]))
+                    print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
                     connection.close()
                     connections.remove(connection)
         else:
@@ -85,7 +100,7 @@ def broadcast(message, sender = None, targets = [], server=False):
             try:
                 connection.send(message.encode())
             except socket.error as e:
-                print("{} disconnected.".format(addresses[c]))
+                print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
                 connection.close()
                 connections.remove(connection)
             
@@ -94,6 +109,7 @@ connections = []
 addresses = {}
 nicks = {}
 illegal_nicks = ["", " ", "<", ">"]
+admin = []
 if __name__ == "__main__":
     server = socket.gethostbyname(socket.gethostname())#"10.13.9.89" # MCS IP Address
     print("IP Address:", server)
