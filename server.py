@@ -9,18 +9,18 @@ def listen(s):
     #try:
     print("Listening for connections to", server, "on port", str(port) + "...")
     s.listen(1)
-    con, addr = s.accept()
-    connections.append(con)
-    addresses[con] = addr
+    c, addr = s.accept()
+    connections.append(c)
+    addresses[c] = addr
     print("Connection established with", str(addr))
-    tc = threading.Thread(target = threaded_client, args = (con, addr))
+    tc = threading.Thread(target = threaded_client, args = (c, addr))
     tc.start()
     #except Exception as e:
         #print(e)
-        #con.close()
-        #connections.remove(con)
+        #c.close()
+        #connections.remove(c)
 
-def process_command(message, c):
+def process_command(message, c, addr):
     message = message[1:]
     params = message.split(" ")
     command = params[0]
@@ -28,8 +28,11 @@ def process_command(message, c):
     if command == "nick":
         nick = " ".join(x for x in params).strip()
         if nick not in illegal_nicks:
-            prev_nick = nicks[c]
-            nicks[c] = nick
+            try:
+                prev_nick = nicks[addr]
+            except:
+                prev_nick = addr
+            nicks[addr] = nick
             response = "{} changed nickname to {}".format(prev_nick, nick)
         else:
             print(c, "nick change blocked. (Value: \"{}\")".format(nick))
@@ -37,24 +40,24 @@ def process_command(message, c):
         broadcast(response, targets = [c])
         
 
-def threaded_client(conn, addr):
+def threaded_client(c, addr):
     #try:
     while True:
-        data = conn.recv(data_buff)
+        data = c.recv(data_buff)
         if not data:
             break
         message = data.decode("utf-8")
         if message[0] == "/":
-            process_command(message, conn)
+            process_command(message, c, addr)
         else:
             print("\"{}\"".format(message), "from", str(addr))
-            broadcast(message, conn)
-    conn.close()
-    connections.remove(conn)
+            broadcast(message, sender=c)
+    c.close()
+    connections.remove(c)
     #except Exception as e:
         #print(e)
-        #conn.close()
-        #connections.remove(conn)
+        #c.close()
+        #connections.remove(c)
 
 def broadcast(message, sender = None, targets = []):
     for connection in connections:
@@ -68,7 +71,7 @@ def broadcast(message, sender = None, targets = []):
                     #connections.remove(connection)
         else:
             #try:
-            message = nicks[sender] + "> " + message
+            message = nicks[addresses[sender]] + "> " + message
             connection.send(message.encode())
             #except Exception as e:
                 #print(e)
