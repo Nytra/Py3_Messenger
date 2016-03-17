@@ -12,5 +12,4 @@ os.system(cmd)
 cmd = "rmdir \"{}\\messenger-master\"".format(os.path.abspath(""))
 print("Cleaning up...")
 os.system(cmd)
-
 print("Done.")
