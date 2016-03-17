@@ -3,7 +3,7 @@ __author__ = "Sam Scott"
 __email__ = "samueltscott@gmail.com"
 # Created on 16-03-2016
 
-import socket, threading
+import socket, threading, time, datetime
 
 def listen(s):
     #try:
@@ -33,11 +33,13 @@ def process_command(message, c, addr):
             except:
                 prev_nick = addr
             nicks[addr] = nick
-            response = "{} changed nickname to {}".format(prev_nick, nick)
+            response = "[SERVER] {} changed nickname to {}".format(prev_nick, nick)
         else:
             print(c, "nick change blocked. (Value: \"{}\")".format(nick))
-            response = "Nickname change denied."
-        broadcast(response, targets = [c])
+            priv_response = "Nickname change denied."
+        broadcast(response, sender=c)
+        if priv_response:
+            broadcast(priv_response, targets = [c])
         
 
 def threaded_client(c, addr):
@@ -61,6 +63,7 @@ def threaded_client(c, addr):
 
 def broadcast(message, sender = None, targets = []):
     for connection in connections:
+        time = datetime.datetime.now().strftime('%H:%M:%S')
         if targets:
             if connection in targets:
                 #try:
@@ -71,7 +74,7 @@ def broadcast(message, sender = None, targets = []):
                     #connections.remove(connection)
         else:
             #try:
-            message = nicks[addresses[sender]] + "> " + message
+            message = time + nicks[addresses[sender]] + ": " + message
             connection.send(message.encode())
             #except Exception as e:
                 #print(e)
