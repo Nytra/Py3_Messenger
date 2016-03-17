@@ -38,12 +38,24 @@ class App(Frame):
         with open("Messenger Client.py", "r") as f:
             file = f.read().strip()
         if data_str != file:
-            print("An update is required.")
-            input()
+            print("An update is available. Would you like to download it? [Y/N]: ", end = "")
+            print(data_str)
+            choice = input().lower().strip()
+            if choice == "y":
+                print("\nDownloading...")
+                self.download_update(data_str)
+            else:
+                print()
         else:
             print("The program is up to date.")
-            input()
-
+            
+    def download_update(self, update):
+        with open("Messenger Client.py", "w") as f:
+            f.write(update)
+        print("The update has been installed. Please restart the program.")
+        while True:
+            quit()
+        
     def __str__(self):
         rep = "Chat Instance\nServer: " + self.server \
               + "\nPort: " + str(self.port) + "\nVersion: " \
