@@ -45,6 +45,7 @@ class App(Frame):
                 self.download_update(data_str)
         else:
             print("The program is up to date.")
+            
     def download_update(self, update):
         with open("Messenger Client.py", "w") as f:
             f.write(update)
