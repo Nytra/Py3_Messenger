@@ -53,7 +53,7 @@ if __name__ == "__main__":
     online_vnum = get_current_version_number()
     local_vnum = get_local_version_number()
     if local_vnum != online_vnum:
-        print("An update is available.\nYou have missed {} commits.\n\nDownload? [Y/N]: ".format(online_vnum - local_vnum), end = "")
+        print("An update is available.\nYou have missed {} commits.\n\nDownload? [Y/N]: ".format(int(online_vnum) - int(local_vnum)), end = "")
         choice = input().lower().strip()
         if choice == "y":
             update()
