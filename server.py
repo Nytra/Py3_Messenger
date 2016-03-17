@@ -11,13 +11,24 @@ def listen(s):
         s.listen(1)
         c, addr = s.accept()
         connections.append(c)
-        print("Connection established with", str(addr), "on port", port)
+        addresses[c] = addr
+        print("Connection established with", str(addr))
         tc = threading.Thread(target = threaded_client, args = (c, addr))
         tc.start()
-    except:
+    except Exception as e:
+        print(e)
+        input("Press enter to continue . . .")
         c.close()
         s.close()
         quit()
+
+def process_command(message, c):
+    message = message[1:]
+    params = message.split(" ")
+    command = params[0]
+    if command == "nick":
+        nicks[c] = " ".join(x for x in params)#params[1] 
+        
 
 def threaded_client(c, addr):
     try:
@@ -26,31 +37,35 @@ def threaded_client(c, addr):
             if not data:
                 break
             message = data.decode("utf-8")
+            if message[0] == "/":
+                process_command(message, c)
             print("\"{}\"".format(message), "from", str(addr))
-            broadcast(message, [c])
+            broadcast(message, c)
         c.close()
         connections.remove(c)
     except Exception as e:
         print(e)
-        
+        input("Press enter to continue . . .")
         c.close()
         s.close()
         quit()
 
-def broadcast(message, exceptions = []):
+def broadcast(message, sender):
     for connection in connections:
         # if connection not in exceptions:
         try:
+            message = nicks[c] + "> " + message
             connection.send(message.encode())
         except Exception as e:
             print(e)
+            
 
 connections = []
+addresses = {}
+nicks = {}
 if __name__ == "__main__":
     server = socket.gethostbyname(socket.gethostname())#"10.13.9.89" # MCS IP Address
-    print("This server's IP address is", server)
-    print("Clients must connect to this address in order to use the chat.")
-    input("\nPress enter to continue . . .")
+    print("IP Address:", server)
     port = 45009
     data_buff = 4096
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
