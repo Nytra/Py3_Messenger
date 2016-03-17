@@ -11,8 +11,6 @@ def listen(s):
     s.listen(1)
     c, addr = s.accept()
     connections.append(c)
-    if len(connections) == 1:
-        admin = [c, addr]
     addresses[c] = addr
     print("Connection established with", str(addr))
     tc = threading.Thread(target = threaded_client, args = (c, addr))
@@ -38,7 +36,7 @@ def process_command(message, c, addr):
                     nicks[addr] = "[ADMIN] " + nick
                 else:
                     nicks[addr] = nick
-                server_command(c, "$%server mod widget nick label text {}".format(nick))
+                server_command(c, "$%server%^mod%^widget%^nick%^label%^text%^{}".format(nick))
                 if prev_nick:
                     response = "{} changed nickname to {}".format(prev_nick, nick)
                     print("{} changed nickname to {}".format(prev_nick, nick))
@@ -70,9 +68,19 @@ def process_command(message, c, addr):
             if connection not in admin:
                 kick(connection)
         response = "All clients have been removed from the session."
-    elif command == "$dev_admin":
+    elif command == "$dev_admin on":
         admin = [c, addr]
         priv_response = "You are now an administrator."
+    elif command == "$dev_admin off":
+        admin = []
+        priv_response = "You are no longer an administrator."
+    elif command == "/list":
+        for index, connection in enumerate(connections):
+            num = index+1
+            response += nicks[addresses[c]] + ", "
+            if num % 3 == 0:
+                response += "\n"
+            
     if response:
         broadcast(response, sender=c, server = True)
     if priv_response:
@@ -110,8 +118,14 @@ def threaded_client(c, addr):
     kick(c)
 
 def broadcast(message, sender = None, targets = [], server=False):
+    time = datetime.datetime.now().strftime('%H:%M:%S')
+    with open("chatlog.txt", "a") as f:
+        if not server:
+            message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
+        else:
+            message = "[" + time + "] " + message
+        f.write(message + "\n")
     for connection in connections:
-        time = datetime.datetime.now().strftime('%H:%M:%S')
         if targets:
             if connection in targets:
                 try:
