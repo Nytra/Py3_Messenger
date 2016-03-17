@@ -54,7 +54,7 @@ def threaded_client(c, addr):
         s.close()
         quit()
 
-def broadcast(message, sender):
+def broadcast(message, c):
     for connection in connections:
         # if connection not in exceptions:
         try:
