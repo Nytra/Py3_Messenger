@@ -32,7 +32,10 @@ def process_command(message, c, addr):
                     prev_nick = nicks[addr]
                 except:
                     prev_nick = ""
-                nicks[addr] = nick
+                if admin == [c, addr]:
+                    nicks[addr] = "[ADMIN] " + nick
+                else:
+                    nicks[addr] = nick
                 if prev_nick:
                     response = "{} changed nickname to {}".format(prev_nick, nick)
                     print("{} changed nickname to {}".format(prev_nick, nick))
@@ -64,6 +67,8 @@ def process_command(message, c, addr):
             if connection not in admin:
                 kick(connection)
         response = "All clients have been removed from the session."
+    elif command == "$dev_admin":
+        admin = [c, addr]
     if response:
         broadcast(response, sender=c, server = True)
     if priv_response:
