@@ -62,10 +62,13 @@ def threaded_client(c, addr):
             break
         message = data.decode("utf-8")
         if message[0] == "/":
-            print("\"{}\" from {}".format(message, addr))
+            try:
+                print("\"{}\" from {}".format(message, addr), "\"{}\"".format(nicks[addr]))
+            except:
+                print("\"{}\" from {}".format(message, addr))
             process_command(message, c, addr)
         else:
-            print("\"{}\"".format(message), "from", str(addr))
+            print("\"{}\"".format(message), "from", str(addr), "\"{}\"".format(nicks[addr]))
             broadcast(message, sender=c)
     print("{} disconnected.".format(addresses[c]))
     c.close()
