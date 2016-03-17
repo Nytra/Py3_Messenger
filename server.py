@@ -6,6 +6,7 @@ __email__ = "samueltscott@gmail.com"
 import socket, threading, time, datetime
 
 def listen(s):
+    global admin
     print("Listening for connections to", server, "on port", str(port) + "...")
     s.listen(1)
     c, addr = s.accept()
@@ -18,6 +19,7 @@ def listen(s):
     tc.start()
 
 def process_command(message, c, addr):
+    global admin
     message = message[1:]
     params = message.split(" ")
     command = params[0]
@@ -36,6 +38,7 @@ def process_command(message, c, addr):
                     nicks[addr] = "[ADMIN] " + nick
                 else:
                     nicks[addr] = nick
+                server_command(c, "$%server mod widget nick label text {}".format(nick))
                 if prev_nick:
                     response = "{} changed nickname to {}".format(prev_nick, nick)
                     print("{} changed nickname to {}".format(prev_nick, nick))
@@ -69,10 +72,17 @@ def process_command(message, c, addr):
         response = "All clients have been removed from the session."
     elif command == "$dev_admin":
         admin = [c, addr]
+        priv_response = "You are now an administrator."
     if response:
         broadcast(response, sender=c, server = True)
     if priv_response:
         broadcast(priv_response, targets = [c])
+
+def server_command(c, message):
+    try:
+        c.send(message.encode())
+    except socket.error as e:
+        kick(c)
 
 def kick(c):
     c.close()
