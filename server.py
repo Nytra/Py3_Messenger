@@ -62,7 +62,7 @@ def threaded_client(c, addr):
             break
         message = data.decode("utf-8")
         if message[0] == "/":
-            print("\"{}\" from {}".format(addr))
+            print("\"{}\" from {}".format(message, addr))
             process_command(message, c, addr)
         else:
             print("\"{}\"".format(message), "from", str(addr))
