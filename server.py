@@ -33,14 +33,17 @@ def process_command(message, c, addr):
             try:
                 prev_nick = nicks[addr]
             except:
-                prev_nick = addr
+                prev_nick = ""
             nicks[addr] = nick
-            response = "[SERVER] {} changed nickname to {}".format(prev_nick, nick)
+            if prev_nick:
+                response = "{} changed nickname to {}".format(prev_nick, nick)
+            else:
+                response = "{} joined the server.".format(nick)
         else:
             print(c, "nick change blocked. (Value: \"{}\")".format(nick))
             priv_response = "Nickname change denied."
     if response:
-        broadcast(response, sender=c)
+        broadcast(response, sender=c, server = True)
     if priv_response:
         broadcast(priv_response, targets = [c])
         
@@ -64,7 +67,7 @@ def threaded_client(c, addr):
         #c.close()
         #connections.remove(c)
 
-def broadcast(message, sender = None, targets = []):
+def broadcast(message, sender = None, targets = [], server=False):
     for connection in connections:
         time = datetime.datetime.now().strftime('%H:%M:%S')
         if targets:
@@ -77,7 +80,10 @@ def broadcast(message, sender = None, targets = []):
                     #connections.remove(connection)
         else:
             #try:
-            message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
+            if not server:
+                message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
+            else:
+                message = "[" + time + "] " + message
             connection.send(message.encode())
             #except Exception as e:
                 #print(e)
