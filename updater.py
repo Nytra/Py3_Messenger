@@ -25,7 +25,7 @@ def get_local_version_number():
         with open("version_info.txt", "r") as f:
             local_version_number = f.read().strip()
     except:
-        local_version_number = 1
+        local_version_number = 0
     return local_version_number
 
 def update():
@@ -44,6 +44,7 @@ def update():
         print("Done.")
         with open("version_info.txt", "w") as f:
             f.write(online_vnum)
+        input("Installation complete.\n\nPress enter to quit . . .")
     except:
         print("An error occurred during the installation procedure. Your files may be corrupt.")
 
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     online_vnum = get_current_version_number()
     local_vnum = get_local_version_number()
     if local_vnum != online_vnum:
-        print("An update is available. Would you like to download it? [Y/N]: ", end = "")
+        print("An update is available.\nYou have missed {} commits.\n\nDownload? [Y/N]: ", end = "")
         choice = input().lower().strip()
         if choice == "y":
             update()
@@ -61,4 +62,5 @@ if __name__ == "__main__":
         choice = input().lower().strip()
         if choice == "y":
             update()
+        
         
