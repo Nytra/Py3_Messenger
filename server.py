@@ -6,7 +6,6 @@ __email__ = "samueltscott@gmail.com"
 import socket, threading, time, datetime
 
 def listen(s):
-    #try:
     print("Listening for connections to", server, "on port", str(port) + "...")
     s.listen(1)
     c, addr = s.accept()
@@ -15,10 +14,6 @@ def listen(s):
     print("Connection established with", str(addr))
     tc = threading.Thread(target = threaded_client, args = (c, addr))
     tc.start()
-    #except Exception as e:
-        #print(e)
-        #c.close()
-        #connections.remove(c)
 
 def process_command(message, c, addr):
     message = message[1:]
@@ -54,10 +49,7 @@ def threaded_client(c, addr):
         try:
             data = c.recv(data_buff)
         except socket.error as e:
-            if e.errno == errno.ECONNRESET:
-                break
-            else:
-                raise
+            break
         if not data:
             break
         message = data.decode("utf-8")
@@ -82,12 +74,9 @@ def broadcast(message, sender = None, targets = [], server=False):
                 try:
                     connection.send(message.encode())
                 except socket.error as e:
-                    if e.errno == errno.ECONNRESET: # client disconnects
-                        print("{} disconnected.".format(addresses[c]))
-                        connection.close()
-                        connections.remove(connection)
-                    else: # other error
-                        raise
+                    print("{} disconnected.".format(addresses[c]))
+                    connection.close()
+                    connections.remove(connection)
         else:
             if not server:
                 message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
@@ -96,13 +85,9 @@ def broadcast(message, sender = None, targets = [], server=False):
             try:
                 connection.send(message.encode())
             except socket.error as e:
-                if e.errno == errno.ECONNRESET: # client disconnects
-                    print("{} disconnected.".format(addresses[c]))
-                    connection.close()
-                    connections.remove(connection)
-                else: # other error
-                    raise
-
+                print("{} disconnected.".format(addresses[c]))
+                connection.close()
+                connections.remove(connection)
             
 
 connections = []
@@ -117,6 +102,6 @@ if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((server, port))
     
-    num_conn = 30
+    num_conn = 100
     for x in range(num_conn):
         listen(s)

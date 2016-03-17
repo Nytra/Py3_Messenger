@@ -41,7 +41,6 @@ def update():
         cmd = "rmdir \"{}\\messenger-master\"".format(os.path.abspath(""))
         print("Cleaning up...")
         os.system(cmd)
-        print("Done.")
         with open("version_info.txt", "w") as f:
             f.write(online_vnum)
         input("Installation complete.\n\nPress enter to quit . . .")
