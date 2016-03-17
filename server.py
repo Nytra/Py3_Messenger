@@ -25,39 +25,54 @@ def process_command(message, c, addr):
     priv_response = ""
     response = ""
     if command == "nick":
-        nick = " ".join(x for x in params).strip()
-        if nick not in illegal_nicks:
-            try:
-                prev_nick = nicks[addr]
-            except:
-                prev_nick = ""
-            nicks[addr] = nick
-            if prev_nick:
-                response = "{} changed nickname to {}".format(prev_nick, nick)
-                print("{} changed nickname to {}".format(prev_nick, nick))
+        if params:
+            nick = " ".join(x for x in params).strip()
+            if nick not in illegal_nicks:
+                try:
+                    prev_nick = nicks[addr]
+                except:
+                    prev_nick = ""
+                nicks[addr] = nick
+                if prev_nick:
+                    response = "{} changed nickname to {}".format(prev_nick, nick)
+                    print("{} changed nickname to {}".format(prev_nick, nick))
+                else:
+                    response = "{} joined the server.".format(nick)
+                    print("{} joined the server.".format(nick))
             else:
-                response = "{} joined the server.".format(nick)
-                print("{} joined the server.".format(nick))
+                print(c, "nick change blocked. (Value: \"{}\")".format(nick))
+                priv_response = "Nickname change denied."
         else:
-            print(c, "nick change blocked. (Value: \"{}\")".format(nick))
-            priv_response = "Nickname change denied."
-    if command == "kick":
-        if admin == [c, addr]:
-            target = params[0]
-            for connection in connections:
-                a = addresses[connection]
-                if nicks[a].lower() == target.lower():
-                    connection.close()
-                    response = "{} has disconnected.".format(nicks[a])
-                    print("{} \"{}\" has disconnected.".format(a, nicks[a]))
-                    connections.remove(connection)
-                    break
+            priv_response = "Invalid parameters. /nick (name)"
+    elif command == "kick":
+        if params:
+            if admin == [c, addr]:
+                target = params[0]
+                for connection in connections:
+                    a = addresses[connection]
+                    if nicks[a].lower() == target.lower():
+                        kick(connection)
+                        response = "{} has disconnected.".format(nicks[a])
+                        print("{} \"{}\" has disconnected.".format(a, nicks[a]))
+                        break
+            else:
+                priv_response = "Access denied."
         else:
-            priv_response = "Access denied."
+            priv_response = "Invalid parameters. /kick (name)"
+    elif command == "kickall" and admin == [c, addr]:
+        for connection in connections:
+            if connection not in admin:
+                kick(connection)
+        response = "All clients have been removed from the session."
     if response:
         broadcast(response, sender=c, server = True)
     if priv_response:
         broadcast(priv_response, targets = [c])
+
+def kick(c):
+    c.close()
+    connections.remove(c)
+    print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
 
 def threaded_client(c, addr):
     while True:
@@ -77,9 +92,7 @@ def threaded_client(c, addr):
         else:
             print("\"{}\"".format(message), "from", str(addr), "\"{}\"".format(nicks[addr]))
             broadcast(message, sender=c)
-    print("{} \"{}\" disconnected.".format(addresses[c], nicks[addr]))
-    c.close()
-    connections.remove(c)
+    kick(c)
 
 def broadcast(message, sender = None, targets = [], server=False):
     for connection in connections:
@@ -89,9 +102,7 @@ def broadcast(message, sender = None, targets = [], server=False):
                 try:
                     connection.send(message.encode())
                 except socket.error as e:
-                    print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
-                    connection.close()
-                    connections.remove(connection)
+                    kick(connection)
         else:
             if not server:
                 message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
@@ -100,9 +111,7 @@ def broadcast(message, sender = None, targets = [], server=False):
             try:
                 connection.send(message.encode())
             except socket.error as e:
-                print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
-                connection.close()
-                connections.remove(connection)
+                kick(connection)
             
 
 connections = []
