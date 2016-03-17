@@ -9,16 +9,16 @@ def listen(s):
     try:
         print("Listening for connections to", server, "on port", str(port) + "...")
         s.listen(1)
-        c, addr = s.accept()
-        connections.append(c)
-        addresses[c] = addr
+        con, addr = s.accept()
+        connections.append(con)
+        addresses[con] = addr
         print("Connection established with", str(addr))
-        tc = threading.Thread(target = threaded_client, args = (c, addr))
+        tc = threading.Thread(target = threaded_client, args = (con, addr))
         tc.start()
     except Exception as e:
         print(e)
-        c.close()
-        connections.remove(c)
+        con.close()
+        connections.remove(con)
 
 def process_command(message, c):
     message = message[1:]
@@ -37,24 +37,24 @@ def process_command(message, c):
         broadcast(response, targets = [c])
         
 
-def threaded_client(c, addr):
+def threaded_client(conn, addr):
     try:
         while True:
-            data = c.recv(data_buff)
+            data = conn.recv(data_buff)
             if not data:
                 break
             message = data.decode("utf-8")
             if message[0] == "/":
-                process_command(message, c)
+                process_command(message, conn)
             else:
                 print("\"{}\"".format(message), "from", str(addr))
-                broadcast(message, c)
-        c.close()
-        connections.remove(c)
+                broadcast(message, conn)
+        conn.close()
+        connections.remove(conn)
     except Exception as e:
         print(e)
-        c.close()
-        connections.remove(c)
+        conn.close()
+        connections.remove(conn)
 
 def broadcast(message, sender = None, targets = []):
     for connection in connections:
