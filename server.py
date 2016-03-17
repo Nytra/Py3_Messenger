@@ -25,6 +25,8 @@ def process_command(message, c, addr):
     params = message.split(" ")
     command = params[0]
     params = params[1:]
+    priv_response = ""
+    response = ""
     if command == "nick":
         nick = " ".join(x for x in params).strip()
         if nick not in illegal_nicks:
@@ -37,9 +39,10 @@ def process_command(message, c, addr):
         else:
             print(c, "nick change blocked. (Value: \"{}\")".format(nick))
             priv_response = "Nickname change denied."
+    if response:
         broadcast(response, sender=c)
-        if priv_response:
-            broadcast(priv_response, targets = [c])
+    if priv_response:
+        broadcast(priv_response, targets = [c])
         
 
 def threaded_client(c, addr):
@@ -74,7 +77,7 @@ def broadcast(message, sender = None, targets = []):
                     #connections.remove(connection)
         else:
             #try:
-            message = time + nicks[addresses[sender]] + ": " + message
+            message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
             connection.send(message.encode())
             #except Exception as e:
                 #print(e)
