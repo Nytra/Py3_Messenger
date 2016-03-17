@@ -48,8 +48,6 @@ def broadcast(message, exceptions = []):
 
 connections = []
 if __name__ == "__main__":
-    repo_url = "https://raw.githubusercontent.com/Nytra/messenger/master/Server.py"
-    check_update()
     server = socket.gethostbyname(socket.gethostname())#"10.13.9.89" # MCS IP Address
     print("This server's IP address is", server)
     print("Clients must connect to this address in order to use the chat.")
