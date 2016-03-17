@@ -104,4 +104,3 @@ app = App(root)
 root.title("Messenger V{}".format(str(App.version)))
 root.geometry("512x720")
 root.mainloop()
-
