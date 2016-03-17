@@ -6,19 +6,19 @@ __email__ = "samueltscott@gmail.com"
 import socket, threading
 
 def listen(s):
-    try:
-        print("Listening for connections to", server, "on port", str(port) + "...")
-        s.listen(1)
-        con, addr = s.accept()
-        connections.append(con)
-        addresses[con] = addr
-        print("Connection established with", str(addr))
-        tc = threading.Thread(target = threaded_client, args = (con, addr))
-        tc.start()
-    except Exception as e:
-        print(e)
-        con.close()
-        connections.remove(con)
+    #try:
+    print("Listening for connections to", server, "on port", str(port) + "...")
+    s.listen(1)
+    con, addr = s.accept()
+    connections.append(con)
+    addresses[con] = addr
+    print("Connection established with", str(addr))
+    tc = threading.Thread(target = threaded_client, args = (con, addr))
+    tc.start()
+    #except Exception as e:
+        #print(e)
+        #con.close()
+        #connections.remove(con)
 
 def process_command(message, c):
     message = message[1:]
@@ -38,42 +38,42 @@ def process_command(message, c):
         
 
 def threaded_client(conn, addr):
-    try:
-        while True:
-            data = conn.recv(data_buff)
-            if not data:
-                break
-            message = data.decode("utf-8")
-            if message[0] == "/":
-                process_command(message, conn)
-            else:
-                print("\"{}\"".format(message), "from", str(addr))
-                broadcast(message, conn)
-        conn.close()
-        connections.remove(conn)
-    except Exception as e:
-        print(e)
-        conn.close()
-        connections.remove(conn)
+    #try:
+    while True:
+        data = conn.recv(data_buff)
+        if not data:
+            break
+        message = data.decode("utf-8")
+        if message[0] == "/":
+            process_command(message, conn)
+        else:
+            print("\"{}\"".format(message), "from", str(addr))
+            broadcast(message, conn)
+    conn.close()
+    connections.remove(conn)
+    #except Exception as e:
+        #print(e)
+        #conn.close()
+        #connections.remove(conn)
 
 def broadcast(message, sender = None, targets = []):
     for connection in connections:
         if targets:
             if connection in targets:
-                try:
-                    connection.send(message.encode())
-                except Exception as e:
-                    print(e)
-                    connection.close()
-                    connections.remove(connection)
-        else:
-            try:
-                message = nicks[sender] + "> " + message
+                #try:
                 connection.send(message.encode())
-            except Exception as e:
-                print(e)
-                connection.close()
-                connections.remove(connection)
+                #except Exception as e:
+                    #print(e)
+                    #connection.close()
+                    #connections.remove(connection)
+        else:
+            #try:
+            message = nicks[sender] + "> " + message
+            connection.send(message.encode())
+            #except Exception as e:
+                #print(e)
+                #connection.close()
+                #connections.remove(connection)
             
 
 connections = []
