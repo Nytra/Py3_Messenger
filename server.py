@@ -3,8 +3,7 @@ __author__ = "Sam Scott"
 __email__ = "samueltscott@gmail.com"
 # Created on 16-03-2016
 
-import socket, threading, os
-from urllib import request
+import socket, threading
 
 def listen(s):
     try:
@@ -54,7 +53,6 @@ if __name__ == "__main__":
     input("\nPress enter to continue . . .")
     port = 45009
     data_buff = 4096
-    
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((server, port))
     
