@@ -26,6 +26,7 @@ def process_command(message, c):
     message = message[1:]
     params = message.split(" ")
     command = params[0]
+    params = params[1:]
     if command == "nick":
         nick = " ".join(x for x in params).strip()
         if nick not in illegal_nicks:
