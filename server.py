@@ -12,7 +12,7 @@ def listen(s):
     c, addr = s.accept()
     connections.append(c)
     addresses[c] = addr
-    print("Connection established with", str(addr))
+    print("Connection established with", addr)
     tc = threading.Thread(target = threaded_client, args = (c, addr))
     tc.start()
 
@@ -46,6 +46,7 @@ def process_command(message, c, addr):
                         print("{} joined the server.".format(nick))
                 else:
                     server_response = "Names cannot contain spaces."
+                    print("Warning issued to {}: \"Names cannot contain spaces.\"")
             else:
                 print(c, "nick change blocked. (Value: \"{}\")".format(nick))
                 server_response = "Nickname change denied."
@@ -59,8 +60,6 @@ def process_command(message, c, addr):
                     a = addresses[connection]
                     if nicks[a].lower() == target.lower():
                         kick(connection)
-                        response = "{} has disconnected.".format(nicks[a])
-                        print("{} \"{}\" has disconnected.".format(a, nicks[a]))
                         break
             else:
                 server_response = "Access denied."
@@ -70,7 +69,7 @@ def process_command(message, c, addr):
         for connection in connections:
             if connection not in admin:
                 kick(connection)
-        response = "All clients have been removed from the session."
+        server_response = "All clients have been removed from the session."
     elif command == "$dev_admin on":
         admin = [c, addr]
         server_response = "You are now an administrator."
@@ -78,11 +77,11 @@ def process_command(message, c, addr):
         admin = []
         server_response = "You are no longer an administrator."
     elif command == "/list":
-        for index, connection in enumerate(connections):
+        for index, nick in enumerate(list(nicks.values())):
             num = index+1
             server_response += nicks[addresses[connection]] + ", "
             if num % 3 == 0:
-                response += "\n"
+                server_response += "\n"
     elif command == "/msg":
         message = " ".join(x for x in params[1:])
         recipient = params[0]
@@ -94,9 +93,15 @@ def process_command(message, c, addr):
                 server_response = "Message sent."
         
     if response:
-        broadcast(response, sender=c, server = True)
+        broadcast(response, sender=c, server_msg = True)
     if server_response:
-        broadcast(server_response, targets = [c])
+        direct_msg(server_response, c)
+
+def direct_msg(message, target):
+    try:
+        target.send(message.encode())
+    except socket.error:
+        kick(target)
 
 def server_command(c, message):
     try:
@@ -105,9 +110,10 @@ def server_command(c, message):
         kick(c)
 
 def kick(c):
-    print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
     c.close()
     connections.remove(c)
+    print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
+    broadcast("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]), server_msg = True)
 
 def threaded_client(c, addr):
     while True:
@@ -120,47 +126,33 @@ def threaded_client(c, addr):
         message = data.decode("utf-8")
         if message[0] == "/":
             try:
-                print("\"{}\" from {}".format(message, addr), "\"{}\"".format(nicks[addr]))
+                print("{} \"{}\": \"{}\"".format(addr, nicks[addr], message))
             except:
-                print("\"{}\" from {}".format(message, addr))
+                print("{}: \"{}\"".format(addr, message))
             process_command(message, c, addr)
         else:
-            print("\"{}\"".format(message), "from", str(addr), "\"{}\"".format(nicks[addr]))
+            print(str(addr), "\"{}\":".format(nicks[addr]), "\"{}\"".format(message))
             broadcast(message, sender=c)
     kick(c)
 
-def broadcast(message, sender = None, targets = [], server=False, private=False):
+def broadcast(message, sender = None, server_msg=False):
     original = message
     time = datetime.datetime.now().strftime('%H:%M:%S')
     with open("chatlog.txt", "a") as f:
-        if targets:
-            pass
+        if not server_msg:
+            message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
         else:
-            if not server:
-                message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
-            else:
-                message = "[" + time + "] " + original
+            message = "[" + time + "] " + original
         f.write(message + "\n")
     for connection in connections:
-        if targets:
-            if connection in targets:
-                try:
-                    if private:
-                        message = "[" + time + "] " + "[Private] " + nicks[addresses[sender]] + ": " + original
-                    print(message)
-                    connection.send(message.encode())
-                except socket.error as e:
-                    kick(connection)
+        if not server_msg and sender != None:
+            message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
         else:
-            if not server:
-                message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
-            else:
-                message = "[" + time + "] " + original
-            try:
-                connection.send(message.encode())
-            except socket.error as e:
-                kick(connection)
-            
+            message = "[SERVER] [" + time + "] " + original
+        try:
+            connection.send(message.encode())
+        except socket.error as e:
+            kick(connection)
 
 connections = []
 addresses = {}
@@ -179,3 +171,4 @@ if __name__ == "__main__":
     num_conn = 100
     for x in range(num_conn):
         listen(s)
+    print("The server has stopped accepting connections.")
