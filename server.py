@@ -18,6 +18,7 @@ def listen(s):
 
 def process_command(message, c, addr):
     global admin
+    time = datetime.datetime.now().strftime('%H:%M:%S')
     message = message[1:]
     params = message.split(" ")
     command = params[0]
@@ -84,13 +85,13 @@ def process_command(message, c, addr):
                 server_response += "\n"
     elif command == "msg":
         if params:
-            message = " ".join(x for x in params[1:])
+            message = "[{}] [PRIVATE] {}: ".format(time, nicks[addr]) + " ".join(x for x in params[1:])
             recipient = params[0]
             server_response = "Message failed to send. {} could not be found.".format(recipient)
             for conn in connections:
                 if nicks[addresses[conn]] == recipient:
                     recipient = conn
-                    broadcast(message, sender = c, targets = [recipient], private = True)
+                    direct_msg(message, recipient)
                     server_response = "Message sent."
         else:
             server_response = "You must specify a recipient and a message in the format /msg {recipient} {msg}"
