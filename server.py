@@ -80,6 +80,10 @@ def process_command(message, c, addr):
             priv_response += nicks[addresses[connection]] + ", "
             if num % 3 == 0:
                 response += "\n"
+    elif command == "/msg":
+        message = " ".join(x for x in params[1:])
+        broadcast(message, sender = c, targets = [], private = True)
+        
             
     if response:
         broadcast(response, sender=c, server = True)
@@ -117,7 +121,7 @@ def threaded_client(c, addr):
             broadcast(message, sender=c)
     kick(c)
 
-def broadcast(message, sender = None, targets = [], server=False):
+def broadcast(message, sender = None, targets = [], server=False, private=False):
     time = datetime.datetime.now().strftime('%H:%M:%S')
     with open("chatlog.txt", "a") as f:
         if targets:
@@ -132,6 +136,9 @@ def broadcast(message, sender = None, targets = [], server=False):
         if targets:
             if connection in targets:
                 try:
+                    if private:
+                        message = "[" + time + "] " + "[Private] " + nicks[addresses[sender]] + ": " + message
+                    print(message)
                     connection.send(message.encode())
                 except socket.error as e:
                     kick(connection)
@@ -140,6 +147,7 @@ def broadcast(message, sender = None, targets = [], server=False):
                 message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
             else:
                 message = "[" + time + "] " + message
+            print(message)
             try:
                 connection.send(message.encode())
             except socket.error as e:
