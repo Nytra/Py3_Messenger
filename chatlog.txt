@@ -1,0 +1,34 @@
+[00:02:58] Sam joined the server.
+[00:03:06] Sam: Hey there!
+Invalid parameters. /nick (name)
+[00:06:00] Sam joined the server.
+[00:06:03] Sam: f
+[00:06:04] Sam: d
+[00:06:05] Sam: f
+[00:06:05] Sam: g
+[00:06:06] Sam: d
+[00:06:06] Sam: s
+[00:06:06] Sam: e
+[00:06:07] Sam: r
+[00:06:07] Sam: t
+[00:06:08] Sam: r
+[00:06:08] Sam: e
+[00:06:08] Sam: s
+[00:06:09] Sam: d
+[00:06:09] Sam: f
+[00:06:10] Sam: e
+[00:06:11] Sam: d
+[00:06:12] Sam: s
+[00:06:14] Sam: e
+[00:06:15] Sam: r
+[00:06:16] Sam: f
+[00:06:17] Sam: d
+[00:06:18] Sam: s
+[00:06:20] Sam: e
+[00:06:21] Sam: f
+[00:06:21] Sam: d
+[00:06:21] Sam: s
+[00:06:22] Sam: e
+[00:06:22] Sam: r
+[00:06:22] Sam: f
+[00:06:23] Sam: d
