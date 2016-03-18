@@ -22,7 +22,7 @@ def process_command(message, c, addr):
     params = message.split(" ")
     command = params[0]
     params = params[1:]
-    priv_response = ""
+    server_response = ""
     response = ""
     if command == "nick":
         if params:
