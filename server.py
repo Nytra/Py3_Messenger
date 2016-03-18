@@ -22,7 +22,7 @@ def process_command(message, c, addr):
     params = message.split(" ")
     command = params[0]
     params = params[1:]
-    server_response = ""
+    priv_response = ""
     response = ""
     if command == "nick":
         if params:
@@ -86,7 +86,12 @@ def process_command(message, c, addr):
     elif command == "/msg":
         message = " ".join(x for x in params[1:])
         recipient = params[0]
-        broadcast(message, sender = c, targets = [recipient], private = True)
+        server_response = "Message failed to send. {} could not be found.".format(recipient)
+        for conn in connections:
+            if nicks[addresses[conn]] == recipient:
+                recipient = conn
+                broadcast(message, sender = c, targets = [recipient], private = True)
+                server_response = "Message sent."
         
     if response:
         broadcast(response, sender=c, server = True)
