@@ -7,7 +7,7 @@ Installation
 
 - Use the updater to get the latest version.
 - It will extract the contents of the repository to the current working directory. (Wherever you placed the updater.)
-- Please note that the updater also doubles as an installer and is 100% portable so you can place it anywhere and it will still work.
+- Please note that the updater can also be used as an installer and is 100% portable so you can place it anywhere and it will still work.
 
 
 Compatibility
