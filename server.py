@@ -77,7 +77,7 @@ def process_command(message, c, addr):
     elif command == "/list":
         for index, connection in enumerate(connections):
             num = index+1
-            response += nicks[addresses[c]] + ", "
+            priv_response += nicks[addresses[connection]] + ", "
             if num % 3 == 0:
                 response += "\n"
             
@@ -120,10 +120,13 @@ def threaded_client(c, addr):
 def broadcast(message, sender = None, targets = [], server=False):
     time = datetime.datetime.now().strftime('%H:%M:%S')
     with open("chatlog.txt", "a") as f:
-        if not server:
-            message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
+        if targets:
+            pass
         else:
-            message = "[" + time + "] " + message
+            if not server:
+                message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
+            else:
+                message = "[" + time + "] " + message
         f.write(message + "\n")
     for connection in connections:
         if targets:
@@ -151,9 +154,10 @@ admin = []
 if __name__ == "__main__":
     server = socket.gethostbyname(socket.gethostname())#"10.13.9.89" # MCS IP Address
     print("IP Address:", server)
-    port = 45009
+    port = 45010
     data_buff = 4096
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((server, port))
     
     num_conn = 100
