@@ -71,10 +71,10 @@ def process_command(message, c, addr):
             if connection not in admin:
                 kick(connection)
         server_response = "All clients have been removed from the session."
-    elif command == "$dev_admin on":
+    elif command == "$dev_admin_on":
         admin = [c, addr]
         server_response = "You are now an administrator."
-    elif command == "$dev_admin off":
+    elif command == "$dev_admin_off":
         admin = []
         server_response = "You are no longer an administrator."
     elif command == "list":
