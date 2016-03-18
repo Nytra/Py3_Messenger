@@ -76,13 +76,13 @@ def process_command(message, c, addr):
     elif command == "$dev_admin off":
         admin = []
         server_response = "You are no longer an administrator."
-    elif command == "/list":
+    elif command == "list":
         for index, nick in enumerate(list(nicks.values())):
             num = index+1
             server_response += nicks[addresses[connection]] + ", "
             if num % 3 == 0:
                 server_response += "\n"
-    elif command == "/msg":
+    elif command == "msg":
         message = " ".join(x for x in params[1:])
         recipient = params[0]
         server_response = "Message failed to send. {} could not be found.".format(recipient)
@@ -112,8 +112,12 @@ def server_command(c, message):
 def kick(c):
     c.close()
     connections.remove(c)
-    print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
-    broadcast("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]), server_msg = True)
+    try:
+        print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
+        broadcast("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]), server_msg = True)
+    except KeyError:
+        print("{} disconnected.".format(addresses[c]))
+        broadcast("{} disconnected.".format(addresses[c]), server_msg = True)
 
 def threaded_client(c, addr):
     while True:
@@ -148,7 +152,7 @@ def broadcast(message, sender = None, server_msg=False):
         if not server_msg and sender != None:
             message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
         else:
-            message = "[SERVER] [" + time + "] " + original
+            message = "[" + time + "] [SERVER]: " + original
         try:
             connection.send(message.encode())
         except socket.error as e:
