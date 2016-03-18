@@ -83,14 +83,17 @@ def process_command(message, c, addr):
             if num % 3 == 0:
                 server_response += "\n"
     elif command == "msg":
-        message = " ".join(x for x in params[1:])
-        recipient = params[0]
-        server_response = "Message failed to send. {} could not be found.".format(recipient)
-        for conn in connections:
-            if nicks[addresses[conn]] == recipient:
-                recipient = conn
-                broadcast(message, sender = c, targets = [recipient], private = True)
-                server_response = "Message sent."
+        if params:
+            message = " ".join(x for x in params[1:])
+            recipient = params[0]
+            server_response = "Message failed to send. {} could not be found.".format(recipient)
+            for conn in connections:
+                if nicks[addresses[conn]] == recipient:
+                    recipient = conn
+                    broadcast(message, sender = c, targets = [recipient], private = True)
+                    server_response = "Message sent."
+        else:
+            server_response = "You must specify a recipient and a message in the format /msg {recipient} {msg}"
         
     if response:
         broadcast(response, sender=c, server_msg = True)
