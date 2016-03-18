@@ -96,7 +96,7 @@ def process_command(message, c, addr):
     if response:
         broadcast(response, sender=c, server = True)
     if server_response:
-        broadcast(priv_response, targets = [c])
+        broadcast(server_response, targets = [c])
 
 def server_command(c, message):
     try:
