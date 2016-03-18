@@ -1,4 +1,7 @@
 What's New
 ----------
 - Implemented commands:
-	- /nick {nickname}
+	- /nick {nickname} # allows you to change your display name.
+	- /kick {nickname} # kicks a client. requires admin
+	- /kickall # kicks all clients. requires admin
+	- /list # lists all clients. currently broken.
