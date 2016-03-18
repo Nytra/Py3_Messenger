@@ -21,5 +21,4 @@ Compatibility
 Known Bugs
 ----------
 
-- Nicknames sometimes display incorrectly.
 - Emojis crash the client as well as the server.
