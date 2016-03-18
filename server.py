@@ -32,22 +32,25 @@ def process_command(message, c, addr):
                     prev_nick = nicks[addr]
                 except:
                     prev_nick = ""
-                if admin == [c, addr]:
-                    nicks[addr] = "[ADMIN] " + nick
+                if " " not in nick:
+                    if admin == [c, addr]:
+                        nicks[addr] = "[ADMIN] " + nick
+                    else:
+                        nicks[addr] = nick
+                    server_command(c, "$%server%^mod%^widget%^nick%^label%^text%^{}".format(nick))
+                    if prev_nick:
+                        response = "{} changed nickname to {}".format(prev_nick, nick)
+                        print("{} changed nickname to {}".format(prev_nick, nick))
+                    else:
+                        response = "{} joined the server.".format(nick)
+                        print("{} joined the server.".format(nick))
                 else:
-                    nicks[addr] = nick
-                server_command(c, "$%server%^mod%^widget%^nick%^label%^text%^{}".format(nick))
-                if prev_nick:
-                    response = "{} changed nickname to {}".format(prev_nick, nick)
-                    print("{} changed nickname to {}".format(prev_nick, nick))
-                else:
-                    response = "{} joined the server.".format(nick)
-                    print("{} joined the server.".format(nick))
+                    server_response = "Names cannot contain spaces."
             else:
                 print(c, "nick change blocked. (Value: \"{}\")".format(nick))
-                priv_response = "Nickname change denied."
+                server_response = "Nickname change denied."
         else:
-            priv_response = "Invalid parameters. /nick (name)"
+            server_response = "Invalid parameters. /nick (name)"
     elif command == "kick":
         if params:
             if admin == [c, addr]:
@@ -60,9 +63,9 @@ def process_command(message, c, addr):
                         print("{} \"{}\" has disconnected.".format(a, nicks[a]))
                         break
             else:
-                priv_response = "Access denied."
+                server_response = "Access denied."
         else:
-            priv_response = "Invalid parameters. /kick (name)"
+            server_response = "Invalid parameters. /kick (name)"
     elif command == "kickall" and admin == [c, addr]:
         for connection in connections:
             if connection not in admin:
@@ -73,21 +76,21 @@ def process_command(message, c, addr):
         priv_response = "You are now an administrator."
     elif command == "$dev_admin off":
         admin = []
-        priv_response = "You are no longer an administrator."
+        server_response = "You are no longer an administrator."
     elif command == "/list":
         for index, connection in enumerate(connections):
             num = index+1
-            priv_response += nicks[addresses[connection]] + ", "
+            server_response += nicks[addresses[connection]] + ", "
             if num % 3 == 0:
                 response += "\n"
     elif command == "/msg":
         message = " ".join(x for x in params[1:])
-        broadcast(message, sender = c, targets = [], private = True)
+        recipient = params[0]
+        broadcast(message, sender = c, targets = [recipient], private = True)
         
-            
     if response:
         broadcast(response, sender=c, server = True)
-    if priv_response:
+    if server_response:
         broadcast(priv_response, targets = [c])
 
 def server_command(c, message):
