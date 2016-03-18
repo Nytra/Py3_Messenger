@@ -22,7 +22,7 @@ def process_command(message, c, addr):
     params = message.split(" ")
     command = params[0]
     params = params[1:]
-    priv_response = ""
+    server_response = ""
     response = ""
     if command == "nick":
         if params:
@@ -73,7 +73,7 @@ def process_command(message, c, addr):
         response = "All clients have been removed from the session."
     elif command == "$dev_admin on":
         admin = [c, addr]
-        priv_response = "You are now an administrator."
+        server_response = "You are now an administrator."
     elif command == "$dev_admin off":
         admin = []
         server_response = "You are no longer an administrator."
