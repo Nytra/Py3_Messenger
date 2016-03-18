@@ -105,9 +105,9 @@ def server_command(c, message):
         kick(c)
 
 def kick(c):
+    print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
     c.close()
     connections.remove(c)
-    print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
 
 def threaded_client(c, addr):
     while True:
