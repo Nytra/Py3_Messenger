@@ -154,6 +154,7 @@ def broadcast(message, sender = None, server_msg=False):
     for connection in connections:
         if not server_msg and sender != None:
             message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
+            server_command(sender, "$%server%^beep")
         else:
             message = "[" + time + "] [SERVER]: " + original
         try:
