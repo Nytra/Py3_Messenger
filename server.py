@@ -22,7 +22,7 @@ def process_command(message, c, addr):
     params = message.split(" ")
     command = params[0]
     params = params[1:]
-    server_response = ""
+    priv_response = ""
     response = ""
     if command == "nick":
         if params:
@@ -125,32 +125,32 @@ def threaded_client(c, addr):
     kick(c)
 
 def broadcast(message, sender = None, targets = [], server=False, private=False):
+    original = message
     time = datetime.datetime.now().strftime('%H:%M:%S')
     with open("chatlog.txt", "a") as f:
         if targets:
             pass
         else:
             if not server:
-                message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
+                message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
             else:
-                message = "[" + time + "] " + message
+                message = "[" + time + "] " + original
         f.write(message + "\n")
     for connection in connections:
         if targets:
             if connection in targets:
                 try:
                     if private:
-                        message = "[" + time + "] " + "[Private] " + nicks[addresses[sender]] + ": " + message
+                        message = "[" + time + "] " + "[Private] " + nicks[addresses[sender]] + ": " + original
                     print(message)
                     connection.send(message.encode())
                 except socket.error as e:
                     kick(connection)
         else:
             if not server:
-                message = "[" + time + "] " + nicks[addresses[sender]] + ": " + message
+                message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
             else:
-                message = "[" + time + "] " + message
-            print(message)
+                message = "[" + time + "] " + original
             try:
                 connection.send(message.encode())
             except socket.error as e:
