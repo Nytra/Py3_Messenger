@@ -7,12 +7,12 @@ import socket, threading, time, datetime
 
 def listen(s):
     global admin
-    print("Listening for connections to", server, "on port", str(port) + "...")
+    print("[" + time() + "]", "Listening for connections to", server, "on port", str(port) + "...")
     s.listen(1)
     c, addr = s.accept()
     connections.append(c)
     addresses[c] = addr
-    print("Connection established with", addr)
+    print("[" + time() + "]", "Connection established with", addr)
     tc = threading.Thread(target = threaded_client, args = (c, addr))
     tc.start()
 
