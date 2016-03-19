@@ -122,7 +122,11 @@ def kick(c):
     except KeyError:
         print("{} disconnected.".format(addresses[c]))
         broadcast("{} disconnected.".format(addresses[c]), server_msg = True)
-    del(nicks[addresses[c]])
+    try:
+        del(nicks[addresses[c]])
+    except KeyError:
+        pass
+        print("{} has no nickname.".format(addresses[c]))
 
 def threaded_client(c, addr):
     while True:
