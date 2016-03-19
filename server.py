@@ -7,12 +7,12 @@ import socket, threading, time, datetime
 
 def listen(s):
     global admin
-    server_log("[" + time() + "] " + "Listening for connections to " + server + " on port " + str(port) + "...")
+    server_log("[" + time(full=True) + "] " + "Listening for connections to " + server + " on port " + str(port) + "...")
     s.listen(1)
     c, addr = s.accept()
     connections.append(c)
     addresses[c] = addr
-    server_log("[" + time() + "] " + "Connection established with " + str(addr))
+    server_log("[" + time(full=True) + "] " + "Connection established with " + str(addr))
     tc = threading.Thread(target = threaded_client, args = (c, addr))
     tc.start()
 
@@ -40,15 +40,15 @@ def process_command(message, c, addr):
                     server_command(c, "$%server%^mod%^widget%^nick%^label%^text%^{}".format(nick))
                     if prev_nick:
                         response = "{} changed nickname to {}".format(prev_nick, nick)
-                        server_log("[" + time() + "] " + "{} changed nickname to {}".format(prev_nick, nick))
+                        server_log("[" + time(full=True) + "] " + "{} changed nickname to {}".format(prev_nick, nick))
                     else:
                         response = "{} joined the server.".format(nick)
-                        server_log("[" + time() + "] " + "{} joined the server.".format(nick))
+                        server_log("[" + time(full=True) + "] " + "{} joined the server.".format(nick))
                 else:
                     server_response = "Names cannot contain spaces."
-                    server_log("[" + time() + "] " + "Warning issued to {}: \"Names cannot contain spaces.\"".format(addr))
+                    server_log("[" + time(full=True) + "] " + "Warning issued to {}: \"Names cannot contain spaces.\"".format(addr))
             else:
-                server_log("[" + time() + "] " + str(addr) + " nick change blocked. (Value: \"{}\")".format(nick))
+                server_log("[" + time(full=True) + "] " + str(addr) + " nick change blocked. (Value: \"{}\")".format(nick))
                 server_response = "Nickname change denied."
         else:
             server_response = "Invalid parameters. /nick (name)"
@@ -103,7 +103,10 @@ def process_command(message, c, addr):
 
 def direct_msg(message, target):
     message = "[{}] ".format(time()) + message
-    server_log("{} \"{}\" Server Direct Message: ".format(addresses[target], nicks[addresses[target]]) + message)
+    try:
+        server_log("[{}] {} \"{}\" Server Direct Message: ".format(time(full=True), addresses[target], nicks[addresses[target]]) + message) # add catch
+    except:
+        server_log("[{}] {} Server Direct Message: ".format(time(full=True), addresses[target]) + message)
     try:
         target.send(message.encode())
     except socket.error:
@@ -119,16 +122,16 @@ def kick(c):
     c.close()
     connections.remove(c)
     try:
-        server_log("[" + time() + "] " + "{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
+        server_log("[" + time(full=True) + "] " + "{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
         broadcast("{} disconnected.".format(nicks[addresses[c]]), server_msg = True)
     except KeyError:
-        server_log("[" + time() + "] " + "{} disconnected.".format(addresses[c]))
+        server_log("[" + time(full=True) + "] " + "{} disconnected.".format(addresses[c]))
         #broadcast("{} disconnected.".format(addresses[c]), server_msg = True)
     try:
         del(nicks[addresses[c]])
     except KeyError:
         pass
-        server_log("[" + time() + "] " + "{} has no nickname.".format(addresses[c]))
+        server_log("[" + time(full=True) + "] " + "{} has no nickname.".format(addresses[c]))
 
 def server_log(message):
     print(str(message))
@@ -146,12 +149,12 @@ def threaded_client(c, addr):
         message = data.decode("utf-8")
         if message[0] == "/":
             try:
-                server_log("[" + time() + "] " + "{} \"{}\": \"{}\"".format(addr, nicks[addr], message))
+                server_log("[" + time(full=True) + "] " + "{} \"{}\": \"{}\"".format(addr, nicks[addr], message))
             except:
-                server_log("[" + time() + "] " + "{}: \"{}\"".format(addr, message))
+                server_log("[" + time(full=True) + "] " + "{}: \"{}\"".format(addr, message))
             process_command(message, c, addr)
         else:
-            server_log("[" + time() + "] " + str(addr) + " \"{}\":".format(nicks[addr]) + " \"{}\"".format(message))
+            server_log("[" + time(full=True) + "] " + str(addr) + " \"{}\":".format(nicks[addr]) + " \"{}\"".format(message))
             broadcast(message, sender=c)
     kick(c)
 
@@ -173,8 +176,11 @@ def broadcast(message, sender = None, server_msg=False):
         except socket.error as e:
             kick(connection)
 
-def time():
-    time = datetime.datetime.now().strftime('%H:%M:%S')
+def time(full = False):
+    if not full:
+        time = datetime.datetime.now().strftime('%H:%M:%S')
+    else:
+        time = datetime.datetime.now().strftime('%d:%m:%Y %H:%M:%S')
     return time
 
 connections = []
@@ -189,10 +195,10 @@ if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((server, port))
-    server_log("=-=-=-=-=-=-=-=-=\n[{}] Starting Server".format(time()))
-    server_log("[{}] IP Address: ".format(time()) + server)
+    server_log("=-=-=-=-=-=-=-=-=\n[{}] Starting Server".format(time(full=True)))
+    server_log("[{}] IP Address: ".format(time(full=True)) + server)
     
     num_conn = 100
     for x in range(num_conn):
         listen(s)
-    server_log("[" + time() + "] " + "The server has stopped accepting connections.")
+    server_log("[" + time(full=True) + "] " + "The server has stopped accepting connections.")
