@@ -120,7 +120,7 @@ def kick(c):
     connections.remove(c)
     try:
         print("[" + time() + "]", "{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
-        broadcast("{} \"{}\" disconnected.".format(nicks[addresses[c]]), server_msg = True)
+        broadcast("\"{}\" disconnected.".format(nicks[addresses[c]]), server_msg = True)
     except KeyError:
         print("[" + time() + "]", "{} disconnected.".format(addresses[c]))
         #broadcast("{} disconnected.".format(addresses[c]), server_msg = True)
