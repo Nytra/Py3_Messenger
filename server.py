@@ -155,7 +155,6 @@ def broadcast(message, sender = None, server_msg=False):
     for connection in connections:
         if not server_msg and sender != None:
             message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
-            server_command(sender, "$%server%^beep")
         else:
             message = "[" + time + "] [SERVER]: " + original
         try:
@@ -171,7 +170,7 @@ admin = []
 if __name__ == "__main__":
     server = socket.gethostbyname(socket.gethostname())#"10.13.9.89" # MCS IP Address
     print("IP Address:", server)
-    port = 45010
+    port = 45011
     data_buff = 4096
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
