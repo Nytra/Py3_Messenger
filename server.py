@@ -46,7 +46,6 @@ def process_command(message, c, addr):
                         server_log("[" + time(full=True) + "] " + "{} joined the server.".format(nick))
                 else:
                     server_response = "Names cannot contain spaces."
-                    server_log("[" + time(full=True) + "] " + "Warning issued to {}: \"Names cannot contain spaces.\"".format(addr))
             else:
                 server_log("[" + time(full=True) + "] " + str(addr) + " nick change blocked. (Value: \"{}\")".format(nick))
                 server_response = "Nickname change denied."
@@ -186,17 +185,22 @@ def time(full = False):
 connections = []
 addresses = {}
 nicks = {}
-illegal_nicks = ["", " ", "<", ">"]
+illegal_nicks = ["", " ", ":"]
 admin = []
 if __name__ == "__main__":
-    server = socket.gethostbyname(socket.gethostname())#"10.13.9.89" # MCS IP Address
+    server = socket.gethostbyname(socket.gethostname()) # "10.13.9.89" # MCS IP Address
     port = 45011
-    data_buff = 4096
+    data_buff = 4096 # data buffer
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind((server, port))
+    try:
+        s.bind((server, port))
+    except socket.error:
+        s.bind((server, 0))
+        port = s.getsockname()[1]
     server_log("=-=-=-=-=-=-=-=-=\n[{}] Starting Server".format(time(full=True)))
     server_log("[{}] IP Address: ".format(time(full=True)) + server)
+    server_log("[{}] Port: ".format(time(full=True)) + str(port))
     
     num_conn = 100
     for x in range(num_conn):
