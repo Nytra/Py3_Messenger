@@ -18,7 +18,6 @@ def listen(s):
 
 def process_command(message, c, addr):
     global admin
-    time = datetime.datetime.now().strftime('%H:%M:%S')
     message = message[1:]
     params = message.split(" ")
     command = params[0]
@@ -41,15 +40,15 @@ def process_command(message, c, addr):
                     server_command(c, "$%server%^mod%^widget%^nick%^label%^text%^{}".format(nick))
                     if prev_nick:
                         response = "{} changed nickname to {}".format(prev_nick, nick)
-                        print("{} changed nickname to {}".format(prev_nick, nick))
+                        print("[" + time() + "]", "{} changed nickname to {}".format(prev_nick, nick))
                     else:
                         response = "{} joined the server.".format(nick)
-                        print("{} joined the server.".format(nick))
+                        print("[" + time() + "]", "{} joined the server.".format(nick))
                 else:
                     server_response = "Names cannot contain spaces."
-                    print("Warning issued to {}: \"Names cannot contain spaces.\"")
+                    print("[" + time() + "]", "Warning issued to {}: \"Names cannot contain spaces.\"".format(addr))
             else:
-                print(c, "nick change blocked. (Value: \"{}\")".format(nick))
+                print("[" + time() + "]", addr, "nick change blocked. (Value: \"{}\")".format(nick))
                 server_response = "Nickname change denied."
         else:
             server_response = "Invalid parameters. /nick (name)"
@@ -85,7 +84,7 @@ def process_command(message, c, addr):
                 server_response += "\n"
     elif command == "msg":
         if params:
-            message = "[{}] [PRIVATE] {}: ".format(time, nicks[addr]) + " ".join(x for x in params[1:])
+            message = "[{}] [PRIVATE] {}: ".format(time(), nicks[addr]) + " ".join(x for x in params[1:])
             recipient = params[0]
             server_response = "Message failed to send. {} could not be found.".format(recipient)
             for conn in connections:
@@ -117,16 +116,16 @@ def kick(c):
     c.close()
     connections.remove(c)
     try:
-        print("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
+        print("[" + time() + "]", "{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
         broadcast("{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]), server_msg = True)
     except KeyError:
-        print("{} disconnected.".format(addresses[c]))
+        print("[" + time() + "]", "{} disconnected.".format(addresses[c]))
         broadcast("{} disconnected.".format(addresses[c]), server_msg = True)
     try:
         del(nicks[addresses[c]])
     except KeyError:
         pass
-        print("{} has no nickname.".format(addresses[c]))
+        print("[" + time() + "]", "{} has no nickname.".format(addresses[c]))
 
 def threaded_client(c, addr):
     while True:
@@ -139,33 +138,36 @@ def threaded_client(c, addr):
         message = data.decode("utf-8")
         if message[0] == "/":
             try:
-                print("{} \"{}\": \"{}\"".format(addr, nicks[addr], message))
+                print("[" + time() + "]", "{} \"{}\": \"{}\"".format(addr, nicks[addr], message))
             except:
-                print("{}: \"{}\"".format(addr, message))
+                print("[" + time() + "]", "{}: \"{}\"".format(addr, message))
             process_command(message, c, addr)
         else:
-            print(str(addr), "\"{}\":".format(nicks[addr]), "\"{}\"".format(message))
+            print("[" + time() + "]", str(addr), "\"{}\":".format(nicks[addr]), "\"{}\"".format(message))
             broadcast(message, sender=c)
     kick(c)
 
 def broadcast(message, sender = None, server_msg=False):
     original = message
-    time = datetime.datetime.now().strftime('%H:%M:%S')
     with open("chatlog.txt", "a") as f:
         if not server_msg:
-            message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
+            message = "[" + time() + "] " + nicks[addresses[sender]] + ": " + original
         else:
-            message = "[" + time + "] " + original
+            message = "[" + time() + "] " + original
         f.write(message + "\n")
     for connection in connections:
         if not server_msg and sender != None:
-            message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
+            message = "[" + time() + "] " + nicks[addresses[sender]] + ": " + original
         else:
-            message = "[" + time + "] " + original
+            message = "[" + time() + "] " + original
         try:
             connection.send(message.encode())
         except socket.error as e:
             kick(connection)
+
+def time():
+    time = datetime.datetime.now().strftime('%H:%M:%S')
+    return time
 
 connections = []
 addresses = {}
@@ -184,4 +186,4 @@ if __name__ == "__main__":
     num_conn = 100
     for x in range(num_conn):
         listen(s)
-    print("The server has stopped accepting connections.")
+    print("[" + time() + "]", "The server has stopped accepting connections.")
