@@ -122,6 +122,7 @@ def kick(c):
     except KeyError:
         print("{} disconnected.".format(addresses[c]))
         broadcast("{} disconnected.".format(addresses[c]), server_msg = True)
+    del(nicks[addresses[c]])
 
 def threaded_client(c, addr):
     while True:
@@ -156,7 +157,7 @@ def broadcast(message, sender = None, server_msg=False):
         if not server_msg and sender != None:
             message = "[" + time + "] " + nicks[addresses[sender]] + ": " + original
         else:
-            message = "[" + time + "] [SERVER]: " + original
+            message = "[" + time + "] " + original
         try:
             connection.send(message.encode())
         except socket.error as e:
