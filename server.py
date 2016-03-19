@@ -83,8 +83,6 @@ def process_command(message, c, addr):
                 server_response += nick + ", "
             else:
                 server_response += nick
-            if num % 3 == 0:
-                server_response += "\n"
     elif command == "msg":
         if params:
             message = "[{}] [PRIVATE] {}: ".format(time(), nicks[addr]) + " ".join(x for x in params[1:])
@@ -104,6 +102,8 @@ def process_command(message, c, addr):
         direct_msg(server_response, c)
 
 def direct_msg(message, target):
+    message = "[{}] [SERVER] ".format(time()) + message
+    server_log("{} \"{}\" Server Direct Message: ".format(addresses[target], nicks[addresses[target]]) + message)
     try:
         target.send(message.encode())
     except socket.error:
