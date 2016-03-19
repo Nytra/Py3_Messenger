@@ -7,12 +7,12 @@ import socket, threading, time, datetime
 
 def listen(s):
     global admin
-    print("[" + time() + "]", "Listening for connections to", server, "on port", str(port) + "...")
+    server_log("[" + time() + "] " + "Listening for connections to " + server + " on port " + str(port) + "...")
     s.listen(1)
     c, addr = s.accept()
     connections.append(c)
     addresses[c] = addr
-    print("[" + time() + "]", "Connection established with", addr)
+    server_log("[" + time() + "] " + "Connection established with " + addr)
     tc = threading.Thread(target = threaded_client, args = (c, addr))
     tc.start()
 
@@ -40,15 +40,15 @@ def process_command(message, c, addr):
                     server_command(c, "$%server%^mod%^widget%^nick%^label%^text%^{}".format(nick))
                     if prev_nick:
                         response = "{} changed nickname to {}".format(prev_nick, nick)
-                        print("[" + time() + "]", "{} changed nickname to {}".format(prev_nick, nick))
+                        server_log("[" + time() + "] " + "{} changed nickname to {}".format(prev_nick, nick))
                     else:
                         response = "{} joined the server.".format(nick)
-                        print("[" + time() + "]", "{} joined the server.".format(nick))
+                        server_log("[" + time() + "] " + "{} joined the server.".format(nick))
                 else:
                     server_response = "Names cannot contain spaces."
-                    print("[" + time() + "]", "Warning issued to {}: \"Names cannot contain spaces.\"".format(addr))
+                    server_log("[" + time() + "] " + "Warning issued to {}: \"Names cannot contain spaces.\"".format(addr))
             else:
-                print("[" + time() + "]", addr, "nick change blocked. (Value: \"{}\")".format(nick))
+                server_log("[" + time() + "] " + addr + " nick change blocked. (Value: \"{}\")".format(nick))
                 server_response = "Nickname change denied."
         else:
             server_response = "Invalid parameters. /nick (name)"
@@ -119,16 +119,21 @@ def kick(c):
     c.close()
     connections.remove(c)
     try:
-        print("[" + time() + "]", "{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
+        server_log("[" + time() + "] " + "{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
         broadcast("\"{}\" disconnected.".format(nicks[addresses[c]]), server_msg = True)
     except KeyError:
-        print("[" + time() + "]", "{} disconnected.".format(addresses[c]))
+        server_log("[" + time() + "] " + "{} disconnected.".format(addresses[c]))
         #broadcast("{} disconnected.".format(addresses[c]), server_msg = True)
     try:
         del(nicks[addresses[c]])
     except KeyError:
         pass
-        print("[" + time() + "]", "{} has no nickname.".format(addresses[c]))
+        server_log("[" + time() + "] " + "{} has no nickname.".format(addresses[c]))
+
+def server_log(message):
+    print(str(message))
+    with open("serverlog.txt", "a") as f:
+        f.write(str(message) + "\n")
 
 def threaded_client(c, addr):
     while True:
@@ -141,12 +146,12 @@ def threaded_client(c, addr):
         message = data.decode("utf-8")
         if message[0] == "/":
             try:
-                print("[" + time() + "]", "{} \"{}\": \"{}\"".format(addr, nicks[addr], message))
+                server_log("[" + time() + "] " + "{} \"{}\": \"{}\"".format(addr, nicks[addr], message))
             except:
-                print("[" + time() + "]", "{}: \"{}\"".format(addr, message))
+                server_log("[" + time() + "] " + "{}: \"{}\"".format(addr, message))
             process_command(message, c, addr)
         else:
-            print("[" + time() + "]", str(addr), "\"{}\":".format(nicks[addr]), "\"{}\"".format(message))
+            server_log("[" + time() + "] " + str(addr) + " \"{}\":".format(nicks[addr]) + " \"{}\"".format(message))
             broadcast(message, sender=c)
     kick(c)
 
@@ -179,14 +184,15 @@ illegal_nicks = ["", " ", "<", ">"]
 admin = []
 if __name__ == "__main__":
     server = socket.gethostbyname(socket.gethostname())#"10.13.9.89" # MCS IP Address
-    print("IP Address:", server)
     port = 45011
     data_buff = 4096
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((server, port))
+    server_log("=-=-=-=-=-=-=-=-=\n[{}] Starting Server".format(time()))
+    server_log("[{}] IP Address: ".format(time()) + server)
     
     num_conn = 100
     for x in range(num_conn):
         listen(s)
-    print("[" + time() + "]", "The server has stopped accepting connections.")
+    server_log("[" + time() + "] " + "The server has stopped accepting connections.")
