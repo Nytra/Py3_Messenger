@@ -84,7 +84,7 @@ def process_command(message, c, addr):
                 server_response += nick
     elif command == "msg":
         if params:
-            message = "[{}] [PRIVATE] {}: ".format(time(), nicks[addr]) + " ".join(x for x in params[1:])
+            message = "[PRIVATE] {}: ".format(time(), nicks[addr]) + " ".join(x for x in params[1:])
             recipient = params[0]
             server_response = "Message failed to send. {} could not be found.".format(recipient)
             for conn in connections:
