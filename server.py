@@ -79,7 +79,10 @@ def process_command(message, c, addr):
     elif command == "list":
         for index, nick in enumerate(list(nicks.values())):
             num = index+1
-            server_response += nick + ", "
+            if num < len(list(nicks.values())):
+                server_response += nick + ", "
+            else:
+                server_response += nick
             if num % 3 == 0:
                 server_response += "\n"
     elif command == "msg":
