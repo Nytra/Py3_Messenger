@@ -102,7 +102,7 @@ def process_command(message, c, addr):
         direct_msg(server_response, c)
 
 def direct_msg(message, target):
-    message = "[{}] [SERVER] ".format(time()) + message
+    message = "[{}] ".format(time()) + message
     server_log("{} \"{}\" Server Direct Message: ".format(addresses[target], nicks[addresses[target]]) + message)
     try:
         target.send(message.encode())
@@ -120,7 +120,7 @@ def kick(c):
     connections.remove(c)
     try:
         server_log("[" + time() + "] " + "{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
-        broadcast("\"{}\" disconnected.".format(nicks[addresses[c]]), server_msg = True)
+        broadcast("{} disconnected.".format(nicks[addresses[c]]), server_msg = True)
     except KeyError:
         server_log("[" + time() + "] " + "{} disconnected.".format(addresses[c]))
         #broadcast("{} disconnected.".format(addresses[c]), server_msg = True)
