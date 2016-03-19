@@ -12,7 +12,7 @@ def listen(s):
     c, addr = s.accept()
     connections.append(c)
     addresses[c] = addr
-    server_log("[" + time() + "] " + "Connection established with " + addr)
+    server_log("[" + time() + "] " + "Connection established with " + str(addr))
     tc = threading.Thread(target = threaded_client, args = (c, addr))
     tc.start()
 
@@ -48,7 +48,7 @@ def process_command(message, c, addr):
                     server_response = "Names cannot contain spaces."
                     server_log("[" + time() + "] " + "Warning issued to {}: \"Names cannot contain spaces.\"".format(addr))
             else:
-                server_log("[" + time() + "] " + addr + " nick change blocked. (Value: \"{}\")".format(nick))
+                server_log("[" + time() + "] " + str(addr) + " nick change blocked. (Value: \"{}\")".format(nick))
                 server_response = "Nickname change denied."
         else:
             server_response = "Invalid parameters. /nick (name)"
