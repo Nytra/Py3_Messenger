@@ -4,4 +4,15 @@ What's New
 	- /nick {nickname} # allows you to change your display name.
 	- /kick {nickname} # kicks a client. requires admin
 	- /kickall # kicks all clients. requires admin
-	- /list # lists all clients. currently broken.
+	- /list # lists all connected clients.
+	- /msg {nickname} {message} # send private messages
+
+- Added keyboard functions:
+	- Enter # Sends the message
+	- Up and down arrow keys # Insert previously sent messages into the input box
+
+- GUI layout:
+	- Positioned entry box underneath the message outbut box along with the send button
+	- Added a button to toggle notifications
+	- Added a disconnect button
+	- Added an epileptic mode button # (Rapidly changing colours and random beeping)

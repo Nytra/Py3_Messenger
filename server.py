@@ -6,13 +6,14 @@ __email__ = "samueltscott@gmail.com"
 import socket, threading, time, datetime
 
 def listen(s):
-    global admin
+    global admin, num_conn, nc_const
     server_log("[" + time(full=True) + "] " + "Listening for connections to " + server + " on port " + str(port) + "...")
     s.listen(1)
     c, addr = s.accept()
     connections.append(c)
     addresses[c] = addr
-    server_log("[" + time(full=True) + "] " + "Connection established with " + str(addr))
+    num_conn += 1
+    server_log("[" + time(full=True) + "] " + "Connection established with " + str(addr) + " [{}/{}]".format(num_conn, nc_const))
     tc = threading.Thread(target = threaded_client, args = (c, addr))
     tc.start()
 
@@ -118,13 +119,15 @@ def server_command(c, message):
         kick(c)
 
 def kick(c):
+    global num_conn, nc_const
     c.close()
     connections.remove(c)
+    num_conn -= 1
     try:
-        server_log("[" + time(full=True) + "] " + "{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]))
+        server_log("[" + time(full=True) + "] " + "{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]) + " [{}/{}]".format(num_conn, nc_const))
         broadcast("{} disconnected.".format(nicks[addresses[c]]), server_msg = True)
     except KeyError:
-        server_log("[" + time(full=True) + "] " + "{} disconnected.".format(addresses[c]))
+        server_log("[" + time(full=True) + "] " + "{} disconnected.".format(addresses[c]) + " [{}/{}]".format(num_conn, nc_const))
         #broadcast("{} disconnected.".format(addresses[c]), server_msg = True)
     try:
         del(nicks[addresses[c]])
@@ -179,7 +182,7 @@ def time(full = False):
     if not full:
         time = datetime.datetime.now().strftime('%H:%M:%S')
     else:
-        time = datetime.datetime.now().strftime('%d:%m:%Y %H:%M:%S')
+        time = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
     return time
 
 connections = []
@@ -195,14 +198,23 @@ if __name__ == "__main__":
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     try:
         s.bind((server, port))
-    except socket.error:
-        s.bind((server, 0))
+    except socket.error: # if port 45011 is not available
+        s.bind((server, 0)) # chooses a random available port
         port = s.getsockname()[1]
-    server_log("=-=-=-=-=-=-=-=-=\n[{}] Starting Server".format(time(full=True)))
+    server_log("=-=-=-=-=-=-=-=-=\n[{}] Starting Server...".format(time(full=True)))
     server_log("[{}] IP Address: ".format(time(full=True)) + server)
     server_log("[{}] Port: ".format(time(full=True)) + str(port))
     
-    num_conn = 100
-    for x in range(num_conn):
-        listen(s)
-    server_log("[" + time(full=True) + "] " + "The server has stopped accepting connections.")
+    num_conn = 0
+    nc_const = 256 # maximum number of connected users
+    printed = False
+    while True:
+        if num_conn >= nc_const:
+            if not printed:
+                server_log("[" + time(full=True) + "] " + "The server has stopped accepting connections. [{}/{}]".format(num_conn, nc_const))
+                printed = True
+        else:
+            if printed:
+                server_log("[" + time(full=True) + "] " + "The server is now accepting connections. [{}/{}]".format(num_conn, nc_const))
+            printed = False
+            listen(s)
