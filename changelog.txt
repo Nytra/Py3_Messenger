@@ -6,6 +6,7 @@ What's New
 	- /kickall # kicks all clients. requires admin
 	- /list # lists all connected clients.
 	- /msg {nickname} {message} # send private messages
+	- /stat # returns some server statistics
 	- Added some (not so) secret debugging commands
 
 - Added keyboard functions:
