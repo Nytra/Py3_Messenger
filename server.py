@@ -97,6 +97,8 @@ def process_command(message, c, addr):
             server_response = "You must specify a recipient and a message in the format /msg {recipient} {msg}"
     elif command == "stat":
         server_response = "Connected clients: [{}/{}], Server uptime: Null".format(num_conn, nc_const)
+    elif command == "party":
+        server_command(c, "$%server%^do%^party")
     else:
         server_response = "\"/{}\" is not recognised as a command.".format(command)
         
