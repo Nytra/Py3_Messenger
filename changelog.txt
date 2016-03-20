@@ -6,6 +6,7 @@ What's New
 	- /kickall # kicks all clients. requires admin
 	- /list # lists all connected clients.
 	- /msg {nickname} {message} # send private messages
+	- Added some (not so) secret debugging commands
 
 - Added keyboard functions:
 	- Enter # Sends the message
@@ -16,3 +17,15 @@ What's New
 	- Added a button to toggle notifications
 	- Added a disconnect button
 	- Added an epileptic mode button # (Rapidly changing colours and random beeping)
+
+- Server:
+	- Set maximum number of concurrent users to 256
+	- The server now keeps a log of all events in a file called "serverlog.txt" which is generated when the server.py file is executed
+	- Added exception handling for situations in which the default port 45011 is not available
+	- The server now handles disconnects properly
+	- Implimented server-side client control. Basically, the server can modify aspects the client's GUI eg text.
+	- Broadcasting messages no longer prints two timestamps
+	- Added a new function direct_msg() which allows the server to send messages to individual clients
+
+- Miscellaneous:
+	- When you connect to a new server, the IP and port is stored in a text file (Unencrypted) and used to help you connect to said server more easily in the future
