@@ -7,7 +7,7 @@ import socket, threading, time, datetime
 
 def listen(s):
     global admin, num_conn, nc_const
-    server_log("[" + time(full=True) + "] " + "Listening for connections to " + server + " on port " + str(port) + "...")
+    server_log("[" + time(full=True) + "] " + "Listening for connections to " + server + ":" + str(port) + " . . .")
     s.listen(1)
     c, addr = s.accept()
     connections.append(c)
@@ -18,7 +18,7 @@ def listen(s):
     tc.start()
 
 def process_command(message, c, addr):
-    global admin
+    global admin, num_conn, nc_const
     message = message[1:]
     params = message.split(" ")
     command = params[0]
@@ -85,7 +85,7 @@ def process_command(message, c, addr):
                 server_response += nick
     elif command == "msg":
         if params:
-            message = "[PRIVATE] {}: ".format(time(), nicks[addr]) + " ".join(x for x in params[1:])
+            message = "[PRIVATE] {}: ".format(nicks[addr]) + " ".join(x for x in params[1:])
             recipient = params[0]
             server_response = "Message failed to send. {} could not be found.".format(recipient)
             for conn in connections:
@@ -95,6 +95,10 @@ def process_command(message, c, addr):
                     server_response = "Message sent."
         else:
             server_response = "You must specify a recipient and a message in the format /msg {recipient} {msg}"
+    elif command == "stat":
+        server_response = "Connected clients: [{}/{}], Server uptime: Null".format(num_conn, nc_const)
+    else:
+        server_response = "\"/{}\" is not recognised as a command.".format(command)
         
     if response:
         broadcast(response, sender=c, server_msg = True)
@@ -102,11 +106,11 @@ def process_command(message, c, addr):
         direct_msg(server_response, c)
 
 def direct_msg(message, target):
-    message = "[{}] ".format(time()) + message
     try:
-        server_log("[{}] {} \"{}\" Server Direct Message: ".format(time(full=True), addresses[target], nicks[addresses[target]]) + message) # add catch
+        server_log("[{}] {} \"{}\" Server Direct Message: ".format(time(full=True), addresses[target], nicks[addresses[target]]) + message)
     except:
         server_log("[{}] {} Server Direct Message: ".format(time(full=True), addresses[target]) + message)
+    message = "[{}] ".format(time()) + message
     try:
         target.send(message.encode())
     except socket.error:
@@ -201,7 +205,7 @@ if __name__ == "__main__":
     except socket.error: # if port 45011 is not available
         s.bind((server, 0)) # chooses a random available port
         port = s.getsockname()[1]
-    server_log("=-=-=-=-=-=-=-=-=\n[{}] Starting Server...".format(time(full=True)))
+    server_log("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n[{}] Starting Server...".format(time(full=True)))
     server_log("[{}] IP Address: ".format(time(full=True)) + server)
     server_log("[{}] Port: ".format(time(full=True)) + str(port))
     
