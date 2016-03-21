@@ -1,6 +1,7 @@
 # TCP Chat Server
 __author__ = "Sam Scott"
 __email__ = "samueltscott@gmail.com"
+_repo = "https://github.com/Nytra/messenger"
 # Created on 16-03-2016
 
 import socket, threading, time, datetime
