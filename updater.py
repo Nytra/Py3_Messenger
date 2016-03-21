@@ -34,7 +34,7 @@ def get_local_version_number():
 
 def update():
     try:
-        print("Downloading master zip file...")
+        print("Downloading repository...")
         r = request.urlopen("https://github.com/Nytra/messenger/archive/master.zip")
         print("Extracting...")
         with zipfile.ZipFile(io.BytesIO(r.read())) as z:
