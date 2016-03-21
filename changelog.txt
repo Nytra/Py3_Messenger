@@ -9,6 +9,7 @@ What's New
 	- /stat # returns some server statistics
 	- /clear # clears the screen
 	- /party # self explanatory. do not use if you're prone to epileptic seizures.
+	- /disconnect # breaks the connection between the client and the server
 	- Added some secret debugging commands :O
 
 - Added keyboard functions:

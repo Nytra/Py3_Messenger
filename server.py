@@ -176,9 +176,9 @@ def broadcast(message, sender = None, server_msg=False):
     original = message
     with open("chatlog.txt", "a") as f:
         if not server_msg:
-            message = "[" + time() + "] " + nicks[addresses[sender]] + ": " + original
+            message = "[" + time(full=True) + "] " + nicks[addresses[sender]] + ": " + original
         else:
-            message = "[" + time() + "] " + original
+            message = "[" + time(full=True) + "] " + original
         f.write(message + "\n")
     for connection in connections:
         if not server_msg and sender != None:
