@@ -103,6 +103,8 @@ def process_command(message, c, addr):
         parties += 1
     elif command == "clear":
         server_command(c, "$%server%^do%^clear")
+    elif command == "disconnect":
+        server_command(c, "$%server%^do%^disconnect")
     else:
         server_response = "\"/{}\" is not a valid command.".format(command)
         

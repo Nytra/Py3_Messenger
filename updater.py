@@ -1,3 +1,7 @@
+# Messenger Update Tool
+__author__ = "Sam Scott"
+__email__ = "samueltscott@gmail.com"
+
 from urllib import request
 import zipfile, io, os, time,string
 
@@ -65,5 +69,3 @@ if __name__ == "__main__":
         choice = input().lower().strip()
         if choice == "y":
             update()
-        
-        
