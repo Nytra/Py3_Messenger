@@ -6,19 +6,20 @@ __email__ = "samueltscott@gmail.com"
 import socket, threading, time, datetime
 
 def listen(s):
-    global admin, num_conn, nc_const
+    global admin, num_conn, nc_const, total_connections
     server_log("[" + time(full=True) + "] " + "Listening for connections to " + server + ":" + str(port) + " . . .")
     s.listen(1)
     c, addr = s.accept()
     connections.append(c)
     addresses[c] = addr
     num_conn += 1
+    total_connections += 1
     server_log("[" + time(full=True) + "] " + "Connection established with " + str(addr) + " [{}/{}]".format(num_conn, nc_const))
     tc = threading.Thread(target = threaded_client, args = (c, addr))
     tc.start()
 
 def process_command(message, c, addr):
-    global admin, num_conn, nc_const
+    global admin, num_conn, nc_const, parties, total_connections
     message = message[1:]
     params = message.split(" ")
     command = params[0]
@@ -96,11 +97,14 @@ def process_command(message, c, addr):
         else:
             server_response = "You must specify a recipient and a message in the format /msg {recipient} {msg}"
     elif command == "stat":
-        server_response = "Connected clients: [{}/{}], Server uptime: Null".format(num_conn, nc_const)
+        server_response = "Connected clients: [{}/{}] - Server running since: [{}] - Number of epileptic seizures: {} - Total number of connections: {}".format(num_conn, nc_const, start_time_full, parties, total_connections)
     elif command == "party":
         server_command(c, "$%server%^do%^party")
+        parties += 1
+    elif command == "clear":
+        server_command(c, "$%server%^do%^clear")
     else:
-        server_response = "\"/{}\" is not recognised as a command.".format(command)
+        server_response = "\"/{}\" is not a valid command.".format(command)
         
     if response:
         broadcast(response, sender=c, server_msg = True)
@@ -184,11 +188,13 @@ def broadcast(message, sender = None, server_msg=False):
         except socket.error as e:
             kick(connection)
 
-def time(full = False):
-    if not full:
+def time(full = False, date_only = False):
+    if not full and not date_only:
         time = datetime.datetime.now().strftime('%H:%M:%S')
-    else:
+    elif not date_only and full == True:
         time = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+    elif not full and date_only == True:
+        time = datetime.datetime.now().strftime('%d-%m-%Y')
     return time
 
 connections = []
@@ -199,6 +205,8 @@ admin = []
 if __name__ == "__main__":
     server = socket.gethostbyname(socket.gethostname()) # "10.13.9.89" # MCS IP Address
     port = 45011
+    parties = 0
+    total_connections = 0
     data_buff = 4096 # data buffer
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -207,6 +215,9 @@ if __name__ == "__main__":
     except socket.error: # if port 45011 is not available
         s.bind((server, 0)) # chooses a random available port
         port = s.getsockname()[1]
+    start_time_date = time(date_only = True)
+    start_time_time = time()
+    start_time_full = time(full=True)
     server_log("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n[{}] Starting Server...".format(time(full=True)))
     server_log("[{}] IP Address: ".format(time(full=True)) + server)
     server_log("[{}] Port: ".format(time(full=True)) + str(port))
