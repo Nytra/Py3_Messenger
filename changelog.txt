@@ -7,7 +7,9 @@ What's New
 	- /list # lists all connected clients.
 	- /msg {nickname} {message} # send private messages
 	- /stat # returns some server statistics
-	- Added some (not so) secret debugging commands
+	- /clear # clears the screen
+	- /party # self explanatory. do not use if you're prone to epileptic seizures.
+	- Added some secret debugging commands :O
 
 - Added keyboard functions:
 	- Enter # Sends the message
@@ -17,7 +19,6 @@ What's New
 	- Positioned entry box underneath the message outbut box along with the send button
 	- Added a button to toggle notifications
 	- Added a disconnect button
-	- Added an epileptic mode button # (Rapidly changing colours and random beeping)
 
 - Server:
 	- Set maximum number of concurrent users to 256
