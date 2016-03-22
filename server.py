@@ -127,14 +127,19 @@ def direct_msg(message, target):
 
 def server_command(c, message):
     try:
+        server_log("[" + time(full=True) + "] " + "Sending server command: {}".format(message))
         c.send(message.encode())
     except socket.error as e:
         kick(c)
 
 def kick(c):
     global num_conn, nc_const
-    c.close()
-    connections.remove(c)
+    try:
+        c.close()
+        connections.remove(c)
+    except:
+        server_log("[" + time(full=True) + "] " + "Attempt to remove client {} failed. Already disconnected?".format(addresses[c]))
+        return
     num_conn -= 1
     try:
         server_log("[" + time(full=True) + "] " + "{} \"{}\" disconnected.".format(addresses[c], nicks[addresses[c]]) + " [{}/{}]".format(num_conn, nc_const))
