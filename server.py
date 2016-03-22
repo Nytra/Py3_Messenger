@@ -8,16 +8,17 @@ import socket, threading, time, datetime
 
 def listen(s):
     global admin, num_conn, nc_const, total_connections
-    server_log("[" + time(full=True) + "] " + "Listening for connections to " + server + ":" + str(port) + " . . .")
+    server_log("[" + time(full=True) + "] " + "listening for connections to " + server + ":" + str(port) + " . . .")
     s.listen(1)
     c, addr = s.accept()
     connections.append(c)
     addresses[c] = addr
     num_conn += 1
     total_connections += 1
-    server_log("[" + time(full=True) + "] " + "Connection established with " + str(addr) + " [{}/{}]".format(num_conn, nc_const))
+    server_log("[" + time(full=True) + "] " + "connection established with " + str(addr) + " [{}/{}]".format(num_conn, nc_const))
     tc = threading.Thread(target = threaded_client, args = (c, addr))
     tc.start()
+    server_log("[" + time(full=True) + "] " + "{} thread started successfully.".format(addresses[c]))
 
 def process_command(message, c, addr):
     global admin, num_conn, nc_const, parties, total_connections
@@ -61,6 +62,7 @@ def process_command(message, c, addr):
                 for connection in connections:
                     a = addresses[connection]
                     if nicks[a].lower() == target.lower():
+                        server_log("[" + time(full=True) + "] " + "{} \"{}\" kick command invoked. removing {} \"{}\" from server.".format(addresses[c], nicks[addresses[c]], a, nicks[a]))
                         kick(connection)
                         break
             else:
@@ -116,20 +118,22 @@ def process_command(message, c, addr):
 
 def direct_msg(message, target):
     try:
-        server_log("[{}] {} \"{}\" Server Direct Message: ".format(time(full=True), addresses[target], nicks[addresses[target]]) + message)
+        server_log("[{}] {} \"{}\" server direct message: ".format(time(full=True), addresses[target], nicks[addresses[target]]) + message)
     except:
-        server_log("[{}] {} Server Direct Message: ".format(time(full=True), addresses[target]) + message)
+        server_log("[{}] {} server direct message: ".format(time(full=True), addresses[target]) + message)
     message = "[{}] ".format(time()) + message
     try:
         target.send(message.encode())
     except socket.error:
+        server_log("[" + time(full=True) + "] " + "{} server direct message failed to send. removing client from server.".format(addresses[c]))
         kick(target)
 
 def server_command(c, message):
     try:
-        server_log("[" + time(full=True) + "] " + "Sending server command: {}".format(message))
+        server_log("[" + time(full=True) + "] " + "sending server command: {}".format(message))
         c.send(message.encode())
     except socket.error as e:
+        server_log("[" + time(full=True) + "] " + "{} server command failed to execute. removing client from server.".format(addresses[c]))
         kick(c)
 
 def kick(c):
@@ -137,8 +141,9 @@ def kick(c):
     try:
         c.close()
         connections.remove(c)
+        server_log("[" + time(full=True) + "] " + "{} client removed from connections array.".format(addresses[c]))
     except:
-        server_log("[" + time(full=True) + "] " + "Attempt to remove client {} failed. Already disconnected?".format(addresses[c]))
+        server_log("[" + time(full=True) + "] " + "{} attempt to remove client failed. already disconnected?".format(addresses[c]))
         return
     num_conn -= 1
     try:
@@ -176,6 +181,7 @@ def threaded_client(c, addr):
         else:
             server_log("[" + time(full=True) + "] " + str(addr) + " \"{}\":".format(nicks[addr]) + " \"{}\"".format(message))
             broadcast(message, sender=c)
+    server_log("[" + time(full=True) + "] " + "{} socket error and or null data. removing client from server.".format(addresses[c]))
     kick(c)
 
 def broadcast(message, sender = None, server_msg=False):
@@ -194,6 +200,7 @@ def broadcast(message, sender = None, server_msg=False):
         try:
             connection.send(message.encode())
         except socket.error as e:
+            server_log("[" + time(full=True) + "] " + "{} broadcast failed. removing client from server.".format(addresses[c]))
             kick(connection)
 
 def time(full = False, date_only = False):
@@ -226,20 +233,21 @@ if __name__ == "__main__":
     start_time_date = time(date_only = True)
     start_time_time = time()
     start_time_full = time(full=True)
-    server_log("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n[{}] Starting Server...".format(time(full=True)))
-    server_log("[{}] IP Address: ".format(time(full=True)) + server)
-    server_log("[{}] Port: ".format(time(full=True)) + str(port))
+    server_log("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n[{}] starting server . . .".format(time(full=True)))
+    server_log("[{}] IP address: ".format(time(full=True)) + server)
+    server_log("[{}] port: ".format(time(full=True)) + str(port))
     
     num_conn = 0
     nc_const = 256 # maximum number of connected users
     printed = False
+    server_log("[" + time(full=True) + "] " + "maximum number of simultaneous connections: {}".format(nc_const))
     while True:
         if num_conn >= nc_const:
             if not printed:
-                server_log("[" + time(full=True) + "] " + "The server has stopped accepting connections. [{}/{}]".format(num_conn, nc_const))
+                server_log("[" + time(full=True) + "] " + "the server has stopped accepting connections. [{}/{}]".format(num_conn, nc_const))
                 printed = True
         else:
             if printed:
-                server_log("[" + time(full=True) + "] " + "The server is now accepting connections. [{}/{}]".format(num_conn, nc_const))
+                server_log("[" + time(full=True) + "] " + "the server is now accepting connections. [{}/{}]".format(num_conn, nc_const))
             printed = False
             listen(s)
