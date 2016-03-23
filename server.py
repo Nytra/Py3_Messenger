@@ -4,13 +4,14 @@ __email__ = "samueltscott@gmail.com"
 _repo = "https://github.com/Nytra/messenger"
 # Created on 16-03-2016
 
-import socket, threading, time, datetime
+import socket, threading, time, datetime, string
 
 def listen(s):
     global admin, num_conn, nc_const, total_connections
     server_log("[" + time(full=True) + "] " + "listening for connections to " + server + ":" + str(port) + " . . .")
     s.listen(1)
     c, addr = s.accept()
+    print(c, addr)
     connections.append(c)
     addresses[c] = addr
     num_conn += 1
@@ -122,6 +123,7 @@ def direct_msg(message, target):
     except:
         server_log("[{}] {} server direct message: ".format(time(full=True), addresses[target]) + message)
     message = "[{}] ".format(time()) + message
+    #message = encrypt(message)
     try:
         target.send(message.encode())
     except socket.error:
@@ -131,6 +133,7 @@ def direct_msg(message, target):
 def server_command(c, message):
     try:
         server_log("[" + time(full=True) + "] " + "sending server command: {}".format(message))
+        #message = encrypt(message, 7)
         c.send(message.encode())
     except socket.error as e:
         server_log("[" + time(full=True) + "] " + "{} server command failed to execute. removing client from server.".format(addresses[c]))
@@ -172,6 +175,7 @@ def threaded_client(c, addr):
         if not data:
             break
         message = data.decode("utf-8")
+        #message = decrypt(message, 7)
         if message[0] == "/":
             try:
                 server_log("[" + time(full=True) + "] " + "{} \"{}\": \"{}\"".format(addr, nicks[addr], message))
@@ -197,6 +201,7 @@ def broadcast(message, sender = None, server_msg=False):
             message = "[" + time() + "] " + nicks[addresses[sender]] + ": " + original
         else:
             message = "[" + time() + "] " + original
+        #message = encrypt(message, 7)
         try:
             connection.send(message.encode())
         except socket.error as e:
@@ -211,6 +216,34 @@ def time(full = False, date_only = False):
     elif not full and date_only == True:
         time = datetime.datetime.now().strftime('%d-%m-%Y')
     return time
+
+def encrypt(message, key):
+    alphabet = string.ascii_letters + string.digits + string.punctuation + string.printable + string.whitespace
+    encrypted = ""
+    for char in message:
+        new_index = alphabet.index(char) + key
+        while new_index > len(alphabet) - 1:
+            new_index -= len(alphabet) - 1
+        while new_index < 0:
+            new_index += len(alphabet) - 1
+        encrypted += alphabet[new_index]
+    return encrypted
+
+def decrypt(message, key):
+    alphabet = string.ascii_letters + string.digits + string.punctuation + string.printable + string.whitespace
+    encrypted = ""
+    for char in message:
+        new_index = alphabet.index(char) - key
+        while new_index > len(alphabet) - 1:
+            new_index -= len(alphabet) - 1
+        while new_index < 0:
+            new_index += len(alphabet) - 1
+        add = alphabet[new_index]
+        if add != "_":
+            encrypted += alphabet[new_index]
+        else:
+            encrypted += " "
+    return encrypted
 
 connections = []
 addresses = {}
