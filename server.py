@@ -246,7 +246,10 @@ def threaded_client(c, addr):
             break
         message = data.decode("utf-8")
         if show_encrypted == True:
-            server_log("[" + time(full=True) + "] " + "{} received encrypted message: \"{}\"".format(addr, message))
+            try:
+                server_log("[" + time(full=True) + "] " + "{} \"{}\" received encrypted message: \"{}\"".format(addr, nicks[addresses[c]], message))
+            except KeyError:
+                server_log("[" + time(full=True) + "] " + "{} received encrypted message: \"{}\"".format(addr, message))
         message = decrypt(message, 7)
         if message[0] == "/":
             try:
@@ -255,7 +258,10 @@ def threaded_client(c, addr):
                 server_log("[" + time(full=True) + "] " + "{}: \"{}\"".format(addr, message))
             process_command(message, c, addr)
         else:
-            server_log("[" + time(full=True) + "] " + str(addr) + " \"{}\":".format(nicks[addr]) + " \"{}\"".format(message))
+            try:
+                server_log("[" + time(full=True) + "] " + str(addr) + " \"{}\":".format(nicks[addr]) + " \"{}\"".format(message))
+            except KeyError:
+                server_log("[" + time(full=True) + "] " + str(addr) + ": \"{}\"".format(message))
             broadcast(message, sender=c)
     try:
         server_log("[" + time(full=True) + "] " + "{} \"{}\" socket error and or null data. removing client from server.".format(addresses[c], nicks[addresses[c]]))
@@ -280,7 +286,10 @@ def broadcast(message, sender = None, server_msg=False):
         try:
             connection.send(message.encode())
         except socket.error as e:
-            server_log("[" + time(full=True) + "] " + "{} broadcast failed. removing client from server.".format(addresses[c]))
+            try:
+                server_log("[" + time(full=True) + "] " + "{} \"{}\" broadcast failed. removing client from server.".format(addresses[c], nicks[addresses[c]]))
+            except KeyError:
+                server_log("[" + time(full=True) + "] " + "{} broadcast failed. removing client from server.".format(addresses[c]))
             kick(connection)
 
 def time(full = False, date_only = False):
