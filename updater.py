@@ -1,7 +1,7 @@
 # Messenger Update Tool
 __author__ = "Sam Scott"
 __email__ = "samueltscott@gmail.com"
-_repo = "https://github.com/Nytra/messenger"
+repo = "https://github.com/Nytra/messenger"
 
 from urllib import request
 import zipfile, io, os, time,string

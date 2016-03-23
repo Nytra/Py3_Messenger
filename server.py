@@ -1,7 +1,7 @@
 # TCP Chat Server
 __author__ = "Sam Scott"
 __email__ = "samueltscott@gmail.com"
-_repo = "https://github.com/Nytra/messenger"
+repo = "https://github.com/Nytra/messenger"
 # Created on 16-03-2016
 
 import socket, threading, time, datetime, string
@@ -11,7 +11,6 @@ def listen(s):
     server_log("[" + time(full=True) + "] " + "listening for connections to " + server + ":" + str(port) + " . . .")
     s.listen(1)
     c, addr = s.accept()
-    print(c, addr)
     connections.append(c)
     addresses[c] = addr
     num_conn += 1
@@ -22,7 +21,7 @@ def listen(s):
     server_log("[" + time(full=True) + "] " + "{} thread started successfully.".format(addresses[c]))
 
 def process_command(message, c, addr):
-    global admin, num_conn, nc_const, parties, total_connections
+    global admin, num_conn, nc_const, parties, total_connections, show_encrypted
     message = message[1:]
     params = message.split(" ")
     command = params[0]
@@ -57,8 +56,8 @@ def process_command(message, c, addr):
         else:
             server_response = "Invalid parameters. /nick (name)"
     elif command == "kick":
-        if params:
-            if admin == [c, addr]:
+        if admin == [c, addr]:
+            if params:
                 target = params[0]
                 for connection in connections:
                     a = addresses[connection]
@@ -67,14 +66,17 @@ def process_command(message, c, addr):
                         kick(connection)
                         break
             else:
-                server_response = "Access denied."
+                server_response = "Invalid parameters. /kick {name}"
         else:
-            server_response = "Invalid parameters. /kick (name)"
-    elif command == "kickall" and admin == [c, addr]:
-        for connection in connections:
-            if connection not in admin:
-                kick(connection)
-        server_response = "All clients have been removed from the session."
+            server_response = "Access denied."
+    elif command == "kickall":
+        if [c, addr] == admin:
+            for connection in connections:
+                if connection not in admin:
+                    kick(connection)
+            server_response = "All clients have been removed from the session."
+        else:
+            server_response = "Access denied."
     elif command == "$dev_admin_on":
         admin = [c, addr]
         server_response = "You are now an administrator."
@@ -109,6 +111,21 @@ def process_command(message, c, addr):
         server_command(c, "$%server%^do%^clear")
     elif command == "disconnect":
         server_command(c, "$%server%^do%^disconnect")
+    elif command == "show_encrypted":
+        if [c, addr] == admin:
+            if params:
+                if params[0] == "1":
+                    show_encrypted = True
+                    server_response = "Encrypted messages are now shown."
+                elif params[0] == "0":
+                    show_encrypted = False
+                    server_response = "Encrypted messages are now hidden."
+                else:
+                    server_response = "On: 1, Off: 0"
+            else:
+                server_response = "/show_encrypted {1, 0}"
+        else:
+            server_response = "Access denied."
     else:
         server_response = "\"/{}\" is not a valid command.".format(command)
         
@@ -167,6 +184,7 @@ def server_log(message):
         f.write(str(message) + "\n")
 
 def threaded_client(c, addr):
+    global show_encrypted
     while True:
         try:
             data = c.recv(data_buff)
@@ -175,7 +193,8 @@ def threaded_client(c, addr):
         if not data:
             break
         message = data.decode("utf-8")
-        server_log("[" + time(full=True) + "] " + "{} received encrypted message: \"{}\"".format(addr, message))
+        if show_encrypted == True:
+            server_log("[" + time(full=True) + "] " + "{} received encrypted message: \"{}\"".format(addr, message))
         message = decrypt(message, 7)
         if message[0] == "/":
             try:
@@ -257,6 +276,7 @@ if __name__ == "__main__":
     port = 45011
     parties = 0
     total_connections = 0
+    show_encrypted = False
     data_buff = 4096 # data buffer
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
