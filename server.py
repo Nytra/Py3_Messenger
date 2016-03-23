@@ -7,7 +7,7 @@ repo = "https://github.com/Nytra/messenger"
 import socket, threading, time, datetime, string
 
 def listen(s):
-    global admin, num_conn, nc_const, total_connections
+    global admins, num_conn, nc_const, total_connections
     server_log("[" + time(full=True) + "] " + "listening for connections to " + server + ":" + str(port) + " . . .")
     s.listen(1)
     c, addr = s.accept()
@@ -21,7 +21,7 @@ def listen(s):
     server_log("[" + time(full=True) + "] " + "{} thread started successfully.".format(addresses[c]))
 
 def process_command(message, c, addr):
-    global admin, num_conn, nc_const, parties, total_connections, show_encrypted
+    global admins, num_conn, nc_const, parties, total_connections, show_encrypted
     message = message[1:]
     params = message.split(" ")
     command = params[0]
@@ -37,7 +37,7 @@ def process_command(message, c, addr):
                 except:
                     prev_nick = ""
                 if " " not in nick:
-                    if admin == [c, addr]:
+                    if [c, addr] in admins:
                         nicks[addr] = "[ADMIN] " + nick
                     else:
                         nicks[addr] = nick
@@ -56,7 +56,7 @@ def process_command(message, c, addr):
         else:
             server_response = "Invalid parameters. /nick (name)"
     elif command == "kick":
-        if admin == [c, addr]:
+        if [c, addr] in admins:
             if params:
                 target = params[0]
                 for connection in connections:
@@ -70,19 +70,29 @@ def process_command(message, c, addr):
         else:
             server_response = "Access denied."
     elif command == "kickall":
-        if [c, addr] == admin:
+        if [c, addr] in admins:
             for connection in connections:
-                if connection not in admin:
+                if [connection, addresses[c]] not in admins:
                     kick(connection)
             server_response = "All clients have been removed from the session."
         else:
             server_response = "Access denied."
-    elif command == "$dev_admin_on":
-        admin = [c, addr]
-        server_response = "You are now an administrator."
-    elif command == "$dev_admin_off":
-        admin = []
-        server_response = "You are no longer an administrator."
+    elif command == "$dev_admin":
+        if params:
+            if params[0] == "1":
+                if [c, addr] not in admins:
+                    admins.append([c, addr])
+                    nicks[addr] = "[ADMIN] " + nicks[addr]
+                    server_response = "You are now an administrator."
+                else:
+                    server_response = "You are already an administrator."
+            elif params[0] == "0":
+                if [c, addr] in admins:
+                    admins.remove([c, addr])
+                    nicks[addr] = nicks[addr][8:]
+                    server_response = "You are no longer an administrator."
+                else:
+                    server_response = "You are not an administrator."
     elif command == "list":
         for index, nick in enumerate(list(nicks.values())):
             num = index+1
@@ -112,7 +122,7 @@ def process_command(message, c, addr):
     elif command == "disconnect":
         server_command(c, "$%server%^do%^disconnect")
     elif command == "show_encrypted":
-        if [c, addr] == admin:
+        if [c, addr] in admins:
             if params:
                 if params[0] == "1":
                     show_encrypted = True
@@ -126,6 +136,28 @@ def process_command(message, c, addr):
                 server_response = "/show_encrypted {1, 0}"
         else:
             server_response = "Access denied."
+    elif command == "admin":
+        if [c, addr] in admins:
+            if params:
+                nick = params[0]
+                for conn in connections:
+                    if nicks[addresses[conn]] == nick:
+                        if [conn, addresses[conn]] not in admins:
+                            admins.append([conn, addresses[conn]])
+                            message = "You are now an administrator."
+                            direct_msg(message, conn)
+                        else:
+                            server_response = "This person is already an administrator."
+        else:
+            server_response = "Access denied."
+    elif command == "show_admins":
+        for index, admin in enumerate(admins):
+            num = index+1
+            nick = nicks[admin[1]]
+            if num < len(admins):
+                server_response += nick + ", "
+            else:
+                server_response += nick
     else:
         server_response = "\"/{}\" is not a valid command.".format(command)
         
@@ -144,26 +176,47 @@ def direct_msg(message, target):
     try:
         target.send(message.encode())
     except socket.error:
-        server_log("[" + time(full=True) + "] " + "{} server direct message failed to send. removing client from server.".format(addresses[c]))
+        try:
+            server_log("[" + time(full=True) + "] " + "{} \"{}\" server direct message failed to send. removing client from server.".format(addresses[c], nicks[addresses[c]]))
+        except KeyError:
+            server_log("[" + time(full=True) + "] " + "{} server direct message failed to send. removing client from server.".format(addresses[c]))
         kick(target)
 
 def server_command(c, message):
     try:
-        server_log("[" + time(full=True) + "] " + "sending server command: {}".format(message))
+        try:
+            server_log("[" + time(full=True) + "] " + "{} \"{}\" sending server command: {}".format(addresses[c], nicks[addresses[c]], message))
+        except KeyError:
+            server_log("[" + time(full=True) + "] " + "{} sending server command: {}".format(addresses[c], message))
         message = encrypt(message, 7)
         c.send(message.encode())
     except socket.error as e:
-        server_log("[" + time(full=True) + "] " + "{} server command failed to execute. removing client from server.".format(addresses[c]))
+        try:
+            server_log("[" + time(full=True) + "] " + "{} \"{}\" server command failed to execute. removing client from server.".format(addresses[c], nicks[addresses[c]]))
+        except KeyError:
+            server_log("[" + time(full=True) + "] " + "{} server command failed to execute. removing client from server.".format(addresses[c]))
         kick(c)
 
 def kick(c):
-    global num_conn, nc_const
+    global num_conn, nc_const, admins
+    if [c, addresses[c]] in admins:
+        admins.remove([c, addresses[c]])
+        try:
+            server_log("[" + time(full=True) + "] " + "{} \"{}\" removed from admins array.".format(addresses[c], nicks[addresses[c]]))
+        except KeyError:
+            server_log("[" + time(full=True) + "] " + "{} removed from admins array.".format(addresses[c]))
     try:
         c.close()
         connections.remove(c)
-        server_log("[" + time(full=True) + "] " + "{} client removed from connections array.".format(addresses[c]))
+        try:
+            server_log("[" + time(full=True) + "] " + "{} \"{}\" removed from connections array.".format(addresses[c], nicks[addresses[c]]))
+        except KeyError:
+            server_log("[" + time(full=True) + "] " + "{} client removed from connections array.".format(addresses[c]))
     except:
-        server_log("[" + time(full=True) + "] " + "{} attempt to remove client failed. already disconnected?".format(addresses[c]))
+        try:
+            server_log("[" + time(full=True) + "] " + "{} \"{}\" attempt to remove client failed. already disconnected?".format(addresses[c], nicks[addresses[c]]))
+        except KeyError:
+            server_log("[" + time(full=True) + "] " + "{} attempt to remove client failed. already disconnected?".format(addresses[c]))
         return
     num_conn -= 1
     try:
@@ -175,7 +228,6 @@ def kick(c):
     try:
         del(nicks[addresses[c]])
     except KeyError:
-        pass
         server_log("[" + time(full=True) + "] " + "{} has no nickname.".format(addresses[c]))
 
 def server_log(message):
@@ -205,7 +257,10 @@ def threaded_client(c, addr):
         else:
             server_log("[" + time(full=True) + "] " + str(addr) + " \"{}\":".format(nicks[addr]) + " \"{}\"".format(message))
             broadcast(message, sender=c)
-    server_log("[" + time(full=True) + "] " + "{} socket error and or null data. removing client from server.".format(addresses[c]))
+    try:
+        server_log("[" + time(full=True) + "] " + "{} \"{}\" socket error and or null data. removing client from server.".format(addresses[c], nicks[addresses[c]]))
+    except KeyError:
+        server_log("[" + time(full=True) + "] " + "{} socket error and or null data. removing client from server.".format(addresses[c]))
     kick(c)
 
 def broadcast(message, sender = None, server_msg=False):
@@ -270,7 +325,7 @@ connections = []
 addresses = {}
 nicks = {}
 illegal_nicks = ["", " ", ":"]
-admin = []
+admins = []
 if __name__ == "__main__":
     server = socket.gethostbyname(socket.gethostname()) # "10.13.9.89" # MCS IP Address
     port = 45011
