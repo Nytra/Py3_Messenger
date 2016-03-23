@@ -137,17 +137,22 @@ def process_command(message, c, addr):
         else:
             server_response = "Access denied."
     elif command == "admin":
+        found = False
         if [c, addr] in admins:
             if params:
                 nick = params[0]
                 for conn in connections:
                     if nicks[addresses[conn]] == nick:
+                        found = True
                         if [conn, addresses[conn]] not in admins:
                             admins.append([conn, addresses[conn]])
+                            nicks[addresses[conn]] = "[ADMIN] " + nicks[addresses[conn]]
                             message = "You are now an administrator."
                             direct_msg(message, conn)
                         else:
                             server_response = "This person is already an administrator."
+                if not found:
+                    server_response = "\"{}\" could not be found".format(nick)
         else:
             server_response = "Access denied."
     elif command == "show_admins":
