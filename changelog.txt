@@ -1,34 +1,50 @@
 What's New
 ----------
 - Implemented commands:
-	- /nick {nickname} # allows you to change your display name.
-	- /kick {nickname} # kicks a client. requires admin
-	- /kickall # kicks all clients. requires admin
-	- /list # lists all connected clients.
-	- /msg {nickname} {message} # send private messages
-	- /stat # returns some server statistics
-	- /clear # clears the screen
-	- /party # self explanatory. do not use if you're prone to epileptic seizures.
-	- /disconnect # breaks the connection between the client and the server
+	- /nick {nickname}
+		- Allows you to change your nickname
+	- /kick {nickname}
+		- Allows admins to disconnect other users
+	- /kickall
+		- Removes all users from the server
+	- /list
+		- Lists all connected users by their nicknames
+	- /msg {nickname} {message}
+		- Allows you to send private messages
+	- /stat
+		- Shows some server statistics
+	- /clear
+		- Clears the screen
+	- /party
+		- Do not use if you suffer from epilepsy
+	- /disconnect
+		- Closes the connection between the client and the server
+	- /admin {nickname}
+		- Allows admins to give other users administrative privilages
 	- Added some secret debugging commands :O
 
 - Added keyboard functions:
-	- Enter # Sends the message
-	- Up and down arrow keys # Insert previously sent messages into the input box
+	- Enter
+		- Sends the message.
+	- Up and down arrow keys
+		- Insert previously sent messages into the entry box.
 
 - GUI layout:
-	- Positioned entry box underneath the message outbut box along with the send button
-	- Added a button to toggle notifications
-	- Added a disconnect button
+	- Positioned entry box underneath the message outbut box along with the send button.
+	- Added a button to toggle notifications.
+	- Added a disconnect button.
 
 - Server:
-	- Set maximum number of concurrent users to 256
-	- The server now keeps a log of all events in a file called "serverlog.txt" which is generated when the server.py file is executed
-	- Added exception handling for situations in which the default port 45011 is not available
-	- The server now handles disconnects properly
-	- Implimented server-side client control. Basically, the server can modify aspects the client's GUI eg text.
-	- Broadcasting messages no longer prints two timestamps
-	- Added a new function direct_msg() which allows the server to send messages to individual clients
+	- Set maximum number of concurrent users to 256.
+	- The server now keeps a log of all events in a file called "serverlog.txt" which is generated when the server.py file is executed.
+	- Added exception handling for situations in which the default port 45011 is not available.
+	- The server now handles disconnects properly.
+	- Implimented server-side client control. Basically, the server can control the client remotely.
+	- Broadcasting messages no longer prints two timestamps.
+	- Added a new function direct_msg() which allows the server to send messages to individual clients.
+
+- Security:
+	- All outgoing messages are now encrypted using a Caesar cipher with a custom arbitrary alphabet.
 
 - Miscellaneous:
-	- When you connect to a new server, the IP and port is stored in a text file (Unencrypted) and used to help you connect to said server more easily in the future
+	- When you connect to a new server, the IP and port is stored in a text file (Unencrypted) and used to help you connect to said server more easily in the future.
