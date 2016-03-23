@@ -123,7 +123,7 @@ def direct_msg(message, target):
     except:
         server_log("[{}] {} server direct message: ".format(time(full=True), addresses[target]) + message)
     message = "[{}] ".format(time()) + message
-    #message = encrypt(message)
+    message = encrypt(message, 7)
     try:
         target.send(message.encode())
     except socket.error:
@@ -133,7 +133,7 @@ def direct_msg(message, target):
 def server_command(c, message):
     try:
         server_log("[" + time(full=True) + "] " + "sending server command: {}".format(message))
-        #message = encrypt(message, 7)
+        message = encrypt(message, 7)
         c.send(message.encode())
     except socket.error as e:
         server_log("[" + time(full=True) + "] " + "{} server command failed to execute. removing client from server.".format(addresses[c]))
@@ -175,7 +175,8 @@ def threaded_client(c, addr):
         if not data:
             break
         message = data.decode("utf-8")
-        #message = decrypt(message, 7)
+        server_log("[" + time(full=True) + "] " + "{} received encrypted message: \"{}\"".format(addr, message))
+        message = decrypt(message, 7)
         if message[0] == "/":
             try:
                 server_log("[" + time(full=True) + "] " + "{} \"{}\": \"{}\"".format(addr, nicks[addr], message))
@@ -201,7 +202,7 @@ def broadcast(message, sender = None, server_msg=False):
             message = "[" + time() + "] " + nicks[addresses[sender]] + ": " + original
         else:
             message = "[" + time() + "] " + original
-        #message = encrypt(message, 7)
+        message = encrypt(message, 7)
         try:
             connection.send(message.encode())
         except socket.error as e:
@@ -218,31 +219,32 @@ def time(full = False, date_only = False):
     return time
 
 def encrypt(message, key):
-    alphabet = string.ascii_letters + string.digits + string.punctuation + string.printable + string.whitespace
+    alphabet = ['x', '$', 'W', 't', 'D', '|', 'd', " ", 'E', 'N', '`', 'n', 'X', 'h', 'V', 'A', 'Y', '5', 'a', '¦', '2', 'J', 'C', 'b', 'k', 'H', 'I', 'c', 'f', 'K', '1', '9', 'u', ':', '3', '#', '%', 'P', 'i', '^', '4', 'O', '(', '[', 'R', '+', 'T', 'o', '@', '&', 'l', 'M', '>', '8', '"', 'Q', '<', '=', '*', '7', 'z', 'v', 'p', 's', 'B', '}', 'G', 'y', ')', '?', '0', '~', '/', "'", 'j', '6', '-', '_', '¬', '£', ',', 'U', 'F', 'Z', 'S', 'g', 'w', 'L', 'e', 'r', 'q', ';', '.', '\\', '!', 'm', ']', '{']
     encrypted = ""
     for char in message:
         new_index = alphabet.index(char) + key
-        while new_index > len(alphabet) - 1:
-            new_index -= len(alphabet) - 1
-        while new_index < 0:
-            new_index += len(alphabet) - 1
+        if new_index < 0:
+            a = len(alphabet[:alphabet.index(char)])
+            new_index = len(alphabet) - a
+        if new_index > len(alphabet) - 1:
+            a = len(alphabet[alphabet.index(char):])
+            new_index = a
         encrypted += alphabet[new_index]
     return encrypted
 
 def decrypt(message, key):
-    alphabet = string.ascii_letters + string.digits + string.punctuation + string.printable + string.whitespace
+    alphabet = ['x', '$', 'W', 't', 'D', '|', 'd', " ", 'E', 'N', '`', 'n', 'X', 'h', 'V', 'A', 'Y', '5', 'a', '¦', '2', 'J', 'C', 'b', 'k', 'H', 'I', 'c', 'f', 'K', '1', '9', 'u', ':', '3', '#', '%', 'P', 'i', '^', '4', 'O', '(', '[', 'R', '+', 'T', 'o', '@', '&', 'l', 'M', '>', '8', '"', 'Q', '<', '=', '*', '7', 'z', 'v', 'p', 's', 'B', '}', 'G', 'y', ')', '?', '0', '~', '/', "'", 'j', '6', '-', '_', '¬', '£', ',', 'U', 'F', 'Z', 'S', 'g', 'w', 'L', 'e', 'r', 'q', ';', '.', '\\', '!', 'm', ']', '{']
     encrypted = ""
     for char in message:
         new_index = alphabet.index(char) - key
-        while new_index > len(alphabet) - 1:
-            new_index -= len(alphabet) - 1
-        while new_index < 0:
-            new_index += len(alphabet) - 1
+        if new_index < 0:
+            a = len(alphabet[:alphabet.index(char)])
+            new_index = len(alphabet) - a
+        if new_index > len(alphabet) - 1:
+            a = len(alphabet[alphabet.index(char):])
+            new_index = a
         add = alphabet[new_index]
-        if add != "_":
-            encrypted += alphabet[new_index]
-        else:
-            encrypted += " "
+        encrypted += add
     return encrypted
 
 connections = []
