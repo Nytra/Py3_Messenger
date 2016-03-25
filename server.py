@@ -288,6 +288,8 @@ def broadcast(message, sender = None, server_msg=False):
         else:
             message = "[" + time() + "] " + original
         message = encrypt(message, 7)
+        if connection != sender:
+            server_command(connection, "$%server%^do%^beep")
         try:
             connection.send(message.encode())
         except socket.error as e:
