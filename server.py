@@ -309,31 +309,36 @@ def time(full = False, date_only = False):
     return time
 
 def encrypt(message, key):
-    alphabet = ['x', '$', 'W', 't', 'D', '|', 'd', " ", 'E', 'N', '`', 'n', 'X', 'h', 'V', 'A', 'Y', '5', 'a', '¦', '2', 'J', 'C', 'b', 'k', 'H', 'I', 'c', 'f', 'K', '1', '9', 'u', ':', '3', '#', '%', 'P', 'i', '^', '4', 'O', '(', '[', 'R', '+', 'T', 'o', '@', '&', 'l', 'M', '>', '8', '"', 'Q', '<', '=', '*', '7', 'z', 'v', 'p', 's', 'B', '}', 'G', 'y', ')', '?', '0', '~', '/', "'", 'j', '6', '-', '_', '¬', '£', ',', 'U', 'F', 'Z', 'S', 'g', 'w', 'L', 'e', 'r', 'q', ';', '.', '\\', '!', 'm', ']', '{']
+    alphabet = ['x', '$', 'W', 't', 'D', '|', 'd', " ", 'E', 'N', '`', 'n', 'X', 'h', 'V', 'A',\
+         'Y', '5', 'a', '¦', '2', 'J', 'C', 'b', 'k', 'H', 'I', 'c', 'f', 'K', '1', '9', 'u', ':', '3',\
+          '#', '%', 'P', 'i', '^', '4', 'O', '(', '[', 'R', '+', 'T', 'o', '@', '&', 'l', 'M', '>', '8',\
+           '"', 'Q', '<', '=', '*', '7', 'z', 'v', 'p', 's', 'B', '}', 'G', 'y', ')', '?', '0', '~', '/',\
+            "'", 'j', '6', '-', '_', '¬', '£', ',', 'U', 'F', 'Z', 'S', 'g', 'w', 'L', 'e', 'r', 'q', ';',\
+             '.', '\\', '!', 'm', ']', '{']
     encrypted = ""
     for char in message:
-        new_index = alphabet.index(char) + key
-        if new_index < 0:
-            a = len(alphabet[:alphabet.index(char)])
-            new_index = len(alphabet) - a
-        if new_index > len(alphabet) - 1:
-            a = len(alphabet[alphabet.index(char):])
-            new_index = a
-        encrypted += alphabet[new_index]
+        index = alphabet.index(char)
+        for i in range(key):
+            print("+1")
+            index += 1
+            if index > len(alphabet) - 1:
+                index = 0
+        encrypted += alphabet[index]
     return encrypted
 
 def decrypt(message, key):
-    alphabet = ['x', '$', 'W', 't', 'D', '|', 'd', " ", 'E', 'N', '`', 'n', 'X', 'h', 'V', 'A', 'Y', '5', 'a', '¦', '2', 'J', 'C', 'b', 'k', 'H', 'I', 'c', 'f', 'K', '1', '9', 'u', ':', '3', '#', '%', 'P', 'i', '^', '4', 'O', '(', '[', 'R', '+', 'T', 'o', '@', '&', 'l', 'M', '>', '8', '"', 'Q', '<', '=', '*', '7', 'z', 'v', 'p', 's', 'B', '}', 'G', 'y', ')', '?', '0', '~', '/', "'", 'j', '6', '-', '_', '¬', '£', ',', 'U', 'F', 'Z', 'S', 'g', 'w', 'L', 'e', 'r', 'q', ';', '.', '\\', '!', 'm', ']', '{']
+    alphabet = ['x', '$', 'W', 't', 'D', '|', 'd', " ", 'E', 'N', '`', 'n', 'X', 'h', 'V', 'A',\
+         'Y', '5', 'a', '¦', '2', 'J', 'C', 'b', 'k', 'H', 'I', 'c', 'f', 'K', '1', '9', 'u', ':', '3',\
+          '#', '%', 'P', 'i', '^', '4', 'O', '(', '[', 'R', '+', 'T', 'o', '@', '&', 'l', 'M', '>', '8',\
+           '"', 'Q', '<', '=', '*', '7', 'z', 'v', 'p', 's', 'B', '}', 'G', 'y', ')', '?', '0', '~', '/',\
+            "'", 'j', '6', '-', '_', '¬', '£', ',', 'U', 'F', 'Z', 'S', 'g', 'w', 'L', 'e', 'r', 'q', ';',\
+             '.', '\\', '!', 'm', ']', '{']
     encrypted = ""
     for char in message:
-        new_index = alphabet.index(char) - key
-        if new_index < 0:
-            a = len(alphabet[:alphabet.index(char)])
-            new_index = len(alphabet) - a
-        if new_index > len(alphabet) - 1:
-            a = len(alphabet[alphabet.index(char):])
-            new_index = a
-        add = alphabet[new_index]
+        index = alphabet.index(char)
+        for i in range(key):
+            index -= 1
+        add = alphabet[index]
         encrypted += add
     return encrypted
 
