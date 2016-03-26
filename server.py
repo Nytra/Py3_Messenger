@@ -335,11 +335,8 @@ def decrypt(message, key):
              '.', '\\', '!', 'm', ']', '{']
     encrypted = ""
     for char in message:
-        index = alphabet.index(char)
-        for i in range(key):
-            index -= 1
-        add = alphabet[index]
-        encrypted += add
+        index = alphabet.index(char) - key
+        encrypted += alphabet[index]
     return encrypted
 
 connections = []
