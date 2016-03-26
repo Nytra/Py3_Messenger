@@ -31,25 +31,30 @@ def process_command(message, c, addr):
     if command == "nick":
         if params:
             nick = " ".join(x for x in params).strip()
-            if nick not in illegal_nicks:
-                try:
-                    prev_nick = nicks[addr]
-                except:
-                    prev_nick = ""
-                if " " not in nick:
-                    if [c, addr] in admins:
-                        nicks[addr] = "[ADMIN] " + nick
-                    else:
+            good = True
+            for x in ["[ADMIN]", "[SERVER]"]:
+                if x.lower() in nick.lower():
+                    good = False
+            if good:
+                if nick not in illegal_nicks:
+                    try:
+                        prev_nick = nicks[addr]
+                    except:
+                        prev_nick = ""
+                    if " " not in nick:
                         nicks[addr] = nick
-                    server_command(c, "$%server%^mod%^widget%^nick%^label%^text%^{}".format(nick))
-                    if prev_nick:
-                        response = "{} changed nickname to {}".format(prev_nick, nick)
-                        server_log("[" + time(full=True) + "] " + "{} changed nickname to {}".format(prev_nick, nick))
+                        server_command(c, "$%server%^mod%^widget%^nick%^label%^text%^{}".format(nick))
+                        if prev_nick:
+                            response = "{} changed nickname to {}".format(prev_nick, nick)
+                            server_log("[" + time(full=True) + "] " + "{} changed nickname to {}".format(prev_nick, nick))
+                        else:
+                            response = "{} joined the server.".format(nick)
+                            server_log("[" + time(full=True) + "] " + "{} joined the server.".format(nick))
                     else:
-                        response = "{} joined the server.".format(nick)
-                        server_log("[" + time(full=True) + "] " + "{} joined the server.".format(nick))
+                        server_response = "Names cannot contain spaces."
                 else:
-                    server_response = "Names cannot contain spaces."
+                    server_log("[" + time(full=True) + "] " + str(addr) + " nick change blocked. (Value: \"{}\")".format(nick))
+                    server_response = "Nickname change denied."
             else:
                 server_log("[" + time(full=True) + "] " + str(addr) + " nick change blocked. (Value: \"{}\")".format(nick))
                 server_response = "Nickname change denied."
@@ -82,14 +87,12 @@ def process_command(message, c, addr):
             if params[0] == "1":
                 if [c, addr] not in admins:
                     admins.append([c, addr])
-                    nicks[addr] = "[ADMIN] " + nicks[addr]
                     server_response = "You are now an administrator."
                 else:
                     server_response = "You are already an administrator."
             elif params[0] == "0":
                 if [c, addr] in admins:
                     admins.remove([c, addr])
-                    nicks[addr] = nicks[addr][8:]
                     server_response = "You are no longer an administrator."
                 else:
                     server_response = "You are not an administrator."
@@ -146,7 +149,6 @@ def process_command(message, c, addr):
                         found = True
                         if [conn, addresses[conn]] not in admins:
                             admins.append([conn, addresses[conn]])
-                            nicks[addresses[conn]] = "[ADMIN] " + nicks[addresses[conn]]
                             message = "You are now an administrator."
                             direct_msg(message, conn)
                         else:
@@ -276,15 +278,19 @@ def threaded_client(c, addr):
 
 def broadcast(message, sender = None, server_msg=False):
     original = message
+    if [sender, addresses[sender]] in admins:
+        nick = "[ADMIN] " + nicks[addresses[sender]]
+    else:
+        nick = nicks[addresses[sender]]
     with open("chatlog.txt", "a") as f:
         if not server_msg:
-            message = "[" + time(full=True) + "] " + nicks[addresses[sender]] + ": " + original
+            message = "[" + time(full=True) + "] " + nick + ": " + original
         else:
             message = "[" + time(full=True) + "] " + original
         f.write(message + "\n")
     for connection in connections:
         if not server_msg and sender != None:
-            message = "[" + time() + "] " + nicks[addresses[sender]] + ": " + original
+            message = "[" + time() + "] " + nick + ": " + original
         else:
             message = "[" + time() + "] " + original
         message = encrypt(message, 7)
@@ -294,7 +300,7 @@ def broadcast(message, sender = None, server_msg=False):
             connection.send(message.encode())
         except socket.error as e:
             try:
-                server_log("[" + time(full=True) + "] " + "{} \"{}\" broadcast failed. removing client from server.".format(addresses[c], nicks[addresses[c]]))
+                server_log("[" + time(full=True) + "] " + "{} \"{}\" broadcast failed. removing client from server.".format(addresses[c], nicks[addresses[sender]]))
             except KeyError:
                 server_log("[" + time(full=True) + "] " + "{} broadcast failed. removing client from server.".format(addresses[c]))
             kick(connection)
@@ -319,7 +325,6 @@ def encrypt(message, key):
     for char in message:
         index = alphabet.index(char)
         for i in range(key):
-            print("+1")
             index += 1
             if index > len(alphabet) - 1:
                 index = 0
