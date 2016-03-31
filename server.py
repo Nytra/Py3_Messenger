@@ -167,7 +167,7 @@ def process_command(message, c, addr):
             else:
                 server_response += nick
     elif command == "help":
-        for cmd in command_list:
+        for cmd in list(command_descriptions.keys()):
             server_response += "\n" + cmd + " - " + command_descriptions[cmd]
     else:
         server_response = "\"/{}\" is not a valid command.".format(command)
@@ -357,7 +357,6 @@ addresses = {}
 nicks = {}
 illegal_nicks = ["", " ", ":"]
 admins = []
-command_list = ["stat", "nick", "kick", "kickall", "msg", "admin", "disconnect", "party", "list", "show_admins", "clear"]
 command_descriptions = {
     "stat":"view some server statistics",
     "nick":"change your nickname",
