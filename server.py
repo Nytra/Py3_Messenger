@@ -166,6 +166,9 @@ def process_command(message, c, addr):
                 server_response += nick + ", "
             else:
                 server_response += nick
+    elif command == "help":
+        for cmd in command_list:
+            server_response += "\n" + cmd + " - " + command_descriptions[cmd]
     else:
         server_response = "\"/{}\" is not a valid command.".format(command)
         
@@ -321,7 +324,7 @@ def encrypt(message, key):
               '#', '%', 'P', 'i', '^', '4', 'O', '(', '[', 'R', '+', 'T', 'o', '@', '&', 'l', 'M', '>', '8',
                '"', 'Q', '<', '=', '*', '7', 'z', 'v', 'p', 's', 'B', '}', 'G', 'y', ')', '?', '0', '~', '/',
                 "'", 'j', '6', '-', '_', '¬', '£', ',', 'U', 'F', 'Z', 'S', 'g', 'w', 'L', 'e', 'r', 'q', ';',
-                 '.', '\\', '!', 'm', ']', '{']
+                 '.', '\\', '!', 'm', ']', '{', "\n"]
     encrypted = ""
     for char in message:
         index = alphabet.index(char)
@@ -338,7 +341,7 @@ def decrypt(message, key):
               '#', '%', 'P', 'i', '^', '4', 'O', '(', '[', 'R', '+', 'T', 'o', '@', '&', 'l', 'M', '>', '8',
                '"', 'Q', '<', '=', '*', '7', 'z', 'v', 'p', 's', 'B', '}', 'G', 'y', ')', '?', '0', '~', '/',
                 "'", 'j', '6', '-', '_', '¬', '£', ',', 'U', 'F', 'Z', 'S', 'g', 'w', 'L', 'e', 'r', 'q', ';',
-                 '.', '\\', '!', 'm', ']', '{']
+                 '.', '\\', '!', 'm', ']', '{', "\n"]
     encrypted = ""
     for char in message:
         index = alphabet.index(char)
@@ -354,6 +357,20 @@ addresses = {}
 nicks = {}
 illegal_nicks = ["", " ", ":"]
 admins = []
+command_list = ["stat", "nick", "kick", "kickall", "msg", "admin", "disconnect", "party", "list", "show_admins", "clear"]
+command_descriptions = {
+    "stat":"view some server statistics",
+    "nick":"change your nickname",
+    "kick":"kick a specified user (requires admin)",
+    "kickall":"kick all connected users (requires admin)",
+    "msg":"send a private message to a specified user",
+    "admin":"allows admins to give other users administrative privilages",
+    "disconnect":"disconnects you from the server",
+    "party":"random flashing/beeping",
+    "list":"list all connected users by their nicknames",
+    "show_admins":"list all connected admins by their nicknames",
+    "clear":"clear the screen"
+}
 if __name__ == "__main__":
     server = socket.gethostbyname(socket.gethostname()) # "10.13.9.89" # MCS IP Address
     port = 45011
