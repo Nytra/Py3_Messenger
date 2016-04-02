@@ -183,7 +183,7 @@ def direct_msg(message, target):
     except:
         server_log("[{}] {} server direct message: ".format(time(full=True), addresses[target]) + message)
     message = "[{}] ".format(time()) + message
-    message = encrypt(message, 7)
+    message = encrypt(message, encryption_key)
     try:
         target.send(message.encode())
     except socket.error:
@@ -199,7 +199,7 @@ def server_command(c, message):
             server_log("[" + time(full=True) + "] " + "{} \"{}\" sending server command: {}".format(addresses[c], nicks[addresses[c]], message))
         except KeyError:
             server_log("[" + time(full=True) + "] " + "{} sending server command: {}".format(addresses[c], message))
-        message = encrypt(message, 7)
+        message = encrypt(message, encryption_key)
         c.send(message.encode())
     except socket.error as e:
         try:
@@ -261,7 +261,7 @@ def threaded_client(c, addr):
                 server_log("[" + time(full=True) + "] " + "{} \"{}\" received encrypted message: \"{}\"".format(addr, nicks[addresses[c]], message))
             except KeyError:
                 server_log("[" + time(full=True) + "] " + "{} received encrypted message: \"{}\"".format(addr, message))
-        message = decrypt(message, 7)
+        message = decrypt(message, encryption_key)
         if message[0] == "/":
             try:
                 server_log("[" + time(full=True) + "] " + "{} \"{}\": \"{}\"".format(addr, nicks[addr], message))
@@ -297,7 +297,7 @@ def broadcast(message, sender = None, server_msg=False):
             message = "[" + time() + "] " + nick + ": " + original
         else:
             message = "[" + time() + "] " + original
-        message = encrypt(message, 7)
+        message = encrypt(message, encryption_key)
         if connection != sender:
             server_command(connection, "$%server%^do%^beep")
         try:
@@ -355,6 +355,7 @@ def decrypt(message, key):
 connections = []
 addresses = {}
 nicks = {}
+encryption_key = 7
 illegal_nicks = ["", " ", ":"]
 admins = []
 command_descriptions = {
