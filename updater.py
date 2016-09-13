@@ -19,8 +19,6 @@ def update():
         cmd = "rmdir \"{}\\messenger-master\"".format(os.path.abspath(""))
         print("Cleaning up...")
         os.system(cmd)
-        with open("version_info.txt", "w") as f:
-            f.write(online_vnum)
         input("Installation complete.\n\nPress enter to quit . . .")
     except:
         print("An error occurred during the installation procedure. Your files may be corrupt.")
