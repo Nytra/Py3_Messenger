@@ -8,20 +8,20 @@ What's New
 	- /kickall
 		- Removes all users from the server
 	- /list
-		- Lists all connected users by their nicknames
+		- Display the nicknames of everyone that is currently connected to the server
 	- /msg {nickname} {message}
 		- Allows you to send private messages
 	- /stat
-		- Shows some server statistics
+		- Shows some server statistics (Like uptime and number of connections)
 	- /clear
 		- Clears the screen
 	- /party
-		- Do not use if you suffer from epilepsy
+		- A fun little command that randomly beeps and changes the colour of the window.
 	- /disconnect
 		- Closes the connection between the client and the server
 	- /admin {nickname}
 		- Allows admins to give other users administrative privilages
-	- Added some secret debugging commands :O
+	- Added some secret debugging commands :O (Read the source code to find out what they are)
 
 - Added keyboard functions:
 	- Enter
@@ -39,12 +39,12 @@ What's New
 	- The server now keeps a log of all events in a file called "serverlog.txt" which is generated when the server.py file is executed.
 	- Added exception handling for situations in which the default port 45011 is not available.
 	- The server now handles disconnects properly.
-	- Implimented server-side client control. Basically, the server can control the client remotely.
+	- The server can now execute client-side code by sending a server command.
 	- Broadcasting messages no longer prints two timestamps.
 	- Added a new function direct_msg() which allows the server to send messages to individual clients.
 
 - Security:
-	- All outgoing messages are now encrypted using a Caesar cipher with a custom arbitrary alphabet.
+	- All outgoing messages are now encrypted using a Caesar cipher with a shuffled array of characters.
 
 - Miscellaneous:
-	- When you connect to a new server, the IP and port is stored in a text file (Unencrypted) and used to help you connect to said server more easily in the future.
+	- When you connect to a new server, the IP and port is stored in a text file and used to help you connect to said server more easily in the future.
