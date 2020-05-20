@@ -2,6 +2,15 @@
 
 A simple messaging app.
 
+![Client GUI](https://github.com/Nytra/Py3_Messenger/blob/master/messenger_client.png)
+The GUI that the client would use to send and receive messages.
+
+![Client Connection Prompt](https://github.com/Nytra/Py3_Messenger/blob/master/client_connection_prompt.png)
+The initial console that prompts the user to enter the IP address of the server.
+
+![Server Event Log](https://github.com/Nytra/Py3_Messenger/blob/master/server_log.png)
+The server's event log. Contains things like messages received, broadcast events and more.
+
 Installation
 -----------------------
 
